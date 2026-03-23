@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { format, subDays, isSameMonth, startOfMonth, endOfMonth, eachDayOfInterval, parseISO, differenceInDays, subMonths, addMonths } from 'date-fns';
+import { motion, AnimatePresence } from 'motion/react';
 import { DailyLog, Prayer, Novena } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -134,7 +135,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
       categoryStreaks[prayer.id] = { current, best };
     });
 
-    // Calculate Monthly Stats based on currentMonth state
+    // Calculate Monthly Stats
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
     const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -147,7 +148,6 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
     let daysWithAtLeastOnePrayer = 0;
 
     daysInMonth.forEach(day => {
-      // Don't count future days in the average
       if (day > today && format(day, 'yyyy-MM-dd') !== format(today, 'yyyy-MM-dd')) return;
       
       const dateStr = format(day, 'yyyy-MM-dd');
@@ -195,52 +195,72 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
   const canGoNext = !isSameMonth(currentMonth, currentDate) && addMonths(currentMonth, 1) <= currentDate;
 
   return (
-    <div className="space-y-6 pb-24 pt-6 px-4 max-w-md mx-auto relative">
+    <div className="space-y-6 pb-24 pt-12 px-4 max-w-md mx-auto relative">
       <header className="space-y-1">
         <h1 className="text-3xl font-semibold tracking-tight">Stats</h1>
         <p className="text-slate-500 dark:text-slate-400">Your spiritual journey</p>
       </header>
 
       <div className="grid grid-cols-2 gap-4">
-        <Card 
-          className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border-orange-100 dark:border-orange-900/50 cursor-pointer hover:shadow-md transition-all"
-          onClick={() => setShowStreakDetails('current')}
-        >
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
-            <div className="p-3 bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400 rounded-full">
-              <Flame className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-orange-700 dark:text-orange-300">{stats.currentStreak}</p>
-              <p className="text-xs font-medium text-orange-600/80 dark:text-orange-400/80 uppercase tracking-wider">Current Streak</p>
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div whileTap={{ scale: 0.95 }}>
+          <Card 
+            className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border-orange-100 dark:border-orange-900/50 cursor-pointer hover:shadow-md transition-all"
+            onClick={() => setShowStreakDetails('current')}
+          >
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+              <div className="p-3 bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400 rounded-full">
+                <Flame className="h-6 w-6" />
+              </div>
+              <div>
+                <motion.p
+                  key={stats.currentStreak}
+                  initial={{ scale: 1.3, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-3xl font-bold text-orange-700 dark:text-orange-300"
+                >
+                  {stats.currentStreak}
+                </motion.p>
+                <p className="text-xs font-medium text-orange-600/80 dark:text-orange-400/80 uppercase tracking-wider">Current Streak</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card 
-          className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 border-indigo-100 dark:border-indigo-900/50 cursor-pointer hover:shadow-md transition-all"
-          onClick={() => setShowStreakDetails('best')}
-        >
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
-            <div className="p-3 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 rounded-full">
-              <TrendingUp className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">{stats.longestStreak}</p>
-              <p className="text-xs font-medium text-indigo-600/80 dark:text-indigo-400/80 uppercase tracking-wider">Best Streak</p>
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div whileTap={{ scale: 0.95 }}>
+          <Card 
+            className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 border-indigo-100 dark:border-indigo-900/50 cursor-pointer hover:shadow-md transition-all"
+            onClick={() => setShowStreakDetails('best')}
+          >
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+              <div className="p-3 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400 rounded-full">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <div>
+                <motion.p
+                  key={stats.longestStreak}
+                  initial={{ scale: 1.3, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-3xl font-bold text-indigo-700 dark:text-indigo-300"
+                >
+                  {stats.longestStreak}
+                </motion.p>
+                <p className="text-xs font-medium text-indigo-600/80 dark:text-indigo-400/80 uppercase tracking-wider">Best Streak</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
-      <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950 py-2 sticky top-0 z-10">
-        <Button variant="ghost" size="icon" onClick={handlePrevMonth}>
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <h2 className="text-lg font-medium">{format(currentMonth, 'MMMM yyyy')}</h2>
-        <Button variant="ghost" size="icon" onClick={handleNextMonth} disabled={!canGoNext}>
-          <ChevronRight className="h-5 w-5" />
-        </Button>
+      <div className="flex items-center justify-between sticky top-0 z-10 py-3">
+        <div className="flex items-center justify-between w-full rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/60 px-1 py-1 shadow-sm">
+          <Button variant="ghost" size="icon" className="rounded-xl" onClick={handlePrevMonth}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h2 className="text-sm font-semibold tracking-wide text-slate-700 dark:text-slate-200">{format(currentMonth, 'MMMM yyyy')}</h2>
+          <Button variant="ghost" size="icon" className="rounded-xl" onClick={handleNextMonth} disabled={!canGoNext}>
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -253,18 +273,32 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
         <CardContent className="space-y-4">
           <div className="flex justify-between items-end pb-4 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{stats.daysWithAtLeastOnePrayer}</p>
+              <motion.p
+                key={`active-${stats.daysWithAtLeastOnePrayer}`}
+                initial={{ scale: 1.2, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-3xl font-bold text-slate-900 dark:text-slate-100"
+              >
+                {stats.daysWithAtLeastOnePrayer}
+              </motion.p>
               <p className="text-sm text-slate-500 dark:text-slate-400">Active Days</p>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{stats.averagePerDay}</p>
+              <motion.p
+                key={`avg-${stats.averagePerDay}`}
+                initial={{ scale: 1.2, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-3xl font-bold text-slate-900 dark:text-slate-100"
+              >
+                {stats.averagePerDay}
+              </motion.p>
               <p className="text-sm text-slate-500 dark:text-slate-400">Avg. Prayers / Day</p>
             </div>
           </div>
 
           <div className="space-y-3 pt-2">
             <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Prayer Breakdown</h3>
-            {prayers.map(prayer => {
+            {prayers.map((prayer, i) => {
               const count = stats.monthlyPrayerCounts[prayer.id] || 0;
               const percentage = stats.daysPassedInMonth > 0 
                 ? Math.round((count / stats.daysPassedInMonth) * 100) 
@@ -277,9 +311,11 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
                     <span className="text-slate-500 dark:text-slate-400">{count} times</span>
                   </div>
                   <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full transition-all" 
-                      style={{ width: `${percentage}%` }}
+                    <motion.div 
+                      className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percentage}%` }}
+                      transition={{ duration: 0.6, delay: i * 0.1 }}
                     />
                   </div>
                 </div>
@@ -294,9 +330,11 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
                   <span className="text-slate-500 dark:text-slate-400">{stats.monthlyTotalNovenas} days</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-rose-500 dark:bg-rose-400 rounded-full transition-all" 
-                    style={{ width: `${Math.round((stats.monthlyTotalNovenas / stats.daysPassedInMonth) * 100)}%` }}
+                  <motion.div 
+                    className="h-full bg-rose-500 dark:bg-rose-400 rounded-full" 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.round((stats.monthlyTotalNovenas / stats.daysPassedInMonth) * 100)}%` }}
+                    transition={{ duration: 0.6, delay: prayers.length * 0.1 }}
                   />
                 </div>
               </div>
@@ -306,43 +344,65 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
       </Card>
 
       {/* Streak Details Modal */}
-      {showStreakDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={() => setShowStreakDetails(null)}>
-          <Card className="w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className="text-xl flex items-center space-x-2">
-                {showStreakDetails === 'current' ? (
-                  <><Flame className="h-5 w-5 text-orange-500" /> <span>Current Streaks</span></>
-                ) : (
-                  <><TrendingUp className="h-5 w-5 text-indigo-500" /> <span>Best Streaks</span></>
-                )}
-              </CardTitle>
-              <Button variant="ghost" size="icon" className="-mr-2" onClick={() => setShowStreakDetails(null)}>
-                <X className="h-5 w-5" />
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                {prayers.map(prayer => {
-                  const val = showStreakDetails === 'current' 
-                    ? stats.categoryStreaks[prayer.id].current 
-                    : stats.categoryStreaks[prayer.id].best;
-                  
-                  return (
-                    <div key={prayer.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                      <span className="font-medium text-slate-700 dark:text-slate-300">{prayer.title}</span>
-                      <div className="flex items-center space-x-1.5">
-                        <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{val}</span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 uppercase">days</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <AnimatePresence>
+        {showStreakDetails && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={() => setShowStreakDetails(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <Card className="w-full max-w-sm shadow-xl">
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                  <CardTitle className="text-xl flex items-center space-x-2">
+                    {showStreakDetails === 'current' ? (
+                      <><Flame className="h-5 w-5 text-orange-500" /> <span>Current Streaks</span></>
+                    ) : (
+                      <><TrendingUp className="h-5 w-5 text-indigo-500" /> <span>Best Streaks</span></>
+                    )}
+                  </CardTitle>
+                  <Button variant="ghost" size="icon" className="-mr-2" onClick={() => setShowStreakDetails(null)}>
+                    <X className="h-5 w-5" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    {prayers.map((prayer, i) => {
+                      const val = showStreakDetails === 'current' 
+                        ? stats.categoryStreaks[prayer.id].current 
+                        : stats.categoryStreaks[prayer.id].best;
+                      
+                      return (
+                        <motion.div
+                          key={prayer.id}
+                          initial={{ opacity: 0, x: -16 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.06 }}
+                          className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+                        >
+                          <span className="font-medium text-slate-700 dark:text-slate-300">{prayer.title}</span>
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{val}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 uppercase">days</span>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

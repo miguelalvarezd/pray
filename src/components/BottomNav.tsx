@@ -1,5 +1,6 @@
 import React from 'react';
 import { Home, ListTodo, CalendarDays, Settings as SettingsIcon, BarChart2 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
 export type Tab = 'today' | 'intentions' | 'history' | 'stats' | 'settings';
@@ -29,12 +30,19 @@ export function BottomNav({ currentTab, onChange }: BottomNavProps) {
               key={tab.id}
               onClick={() => onChange(tab.id)}
               className={cn(
-                'flex flex-col items-center justify-center space-y-1 w-16 h-full transition-colors',
+                'relative flex flex-col items-center justify-center space-y-1 w-16 h-full transition-colors',
                 isActive
                   ? 'text-indigo-600 dark:text-indigo-400'
                   : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50'
               )}
             >
+              {isActive && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute -top-px left-2 right-2 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
               <Icon
                 className={cn('h-6 w-6', isActive && 'fill-indigo-100 dark:fill-indigo-900/50')}
                 strokeWidth={isActive ? 2.5 : 2}
