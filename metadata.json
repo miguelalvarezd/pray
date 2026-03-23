@@ -1,0 +1,5 @@
+{
+  "name": "Prayer & Intention Tracker",
+  "description": "A mobile-first app to track daily prayers and manage prayer intentions with urgency decay.",
+  "requestFramePermissions": []
+}
