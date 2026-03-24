@@ -29,6 +29,13 @@ const fadeSlide = {
 export function Today({ log, updateLog, intentions, novenas, prayers, currentDate }: TodayProps) {
   const todayStr = format(currentDate, 'EEEE, MMMM do');
   const [expandedPrayers, setExpandedPrayers] = React.useState<string[]>([]);
+  const [dynamicPrayers, setDynamicPrayers] = React.useState<Prayer[]>(prayers);
+
+  React.useEffect(() => {
+    import('@/lib/api').then(({ getDynamicPrayers }) => {
+      getDynamicPrayers(prayers, currentDate).then(setDynamicPrayers);
+    });
+  }, [prayers, currentDate]);
 
   const togglePrayer = (id: string) => {
     const isCompleted = log.completedPrayers.includes(id);
@@ -168,7 +175,7 @@ export function Today({ log, updateLog, intentions, novenas, prayers, currentDat
       <section className="space-y-4">
         <h2 className="font-headline text-2xl font-medium">Daily Prayers</h2>
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
-          {prayers.map((prayer, i) => {
+          {dynamicPrayers.map((prayer, i) => {
             const isCompleted = log.completedPrayers.includes(prayer.id);
             const isExpanded = expandedPrayers.includes(prayer.id);
 
@@ -186,9 +193,17 @@ export function Today({ log, updateLog, intentions, novenas, prayers, currentDat
                 )}
               >
                 {/* Header (clickable to expand) */}
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setExpandedPrayers(prev => prev.includes(prayer.id) ? prev.filter(p => p !== prayer.id) : [...prev, prayer.id]);
+                    }
+                  }}
                   onClick={() => setExpandedPrayers(prev => prev.includes(prayer.id) ? prev.filter(p => p !== prayer.id) : [...prev, prayer.id])}
-                  className="flex w-full items-center justify-between p-5 text-left active:scale-[0.98] transition-transform"
+                  className="flex w-full cursor-pointer items-center justify-between p-5 text-left active:scale-[0.98] transition-transform"
                 >
                   <div className="flex items-center gap-5">
                     <div className={cn(
@@ -228,7 +243,7 @@ export function Today({ log, updateLog, intentions, novenas, prayers, currentDat
                     {isCompleted && <Check className="h-4 w-4 text-on-secondary" strokeWidth={3} />}
                   </button>
                   </div>
-                </button>
+                </div>
 
                 {/* Expanded Content */}
                 <AnimatePresence>
