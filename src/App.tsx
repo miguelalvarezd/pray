@@ -101,9 +101,9 @@ export default function App() {
   };
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="prayer-tracker-theme">
-      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
-        <main className="mx-auto w-full max-w-md">
+    <ThemeProvider defaultTheme="light" storageKey="prayer-tracker-theme">
+      <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+        <main className="mx-auto w-full max-w-screen-sm">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentTab}

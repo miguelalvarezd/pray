@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, ListTodo, CalendarDays, Settings as SettingsIcon, BarChart2 } from 'lucide-react';
+import { Home, Heart, Church, Clock, Settings as SettingsIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
@@ -12,16 +12,16 @@ interface BottomNavProps {
 
 export function BottomNav({ currentTab, onChange }: BottomNavProps) {
   const tabs = [
-    { id: 'today' as Tab, label: 'Today', icon: Home },
-    { id: 'intentions' as Tab, label: 'Intentions', icon: ListTodo },
-    { id: 'history' as Tab, label: 'Agenda', icon: CalendarDays },
-    { id: 'stats' as Tab, label: 'Stats', icon: BarChart2 },
+    { id: 'today' as Tab, label: 'Home', icon: Home },
+    { id: 'intentions' as Tab, label: 'Intentions', icon: Heart },
+    { id: 'history' as Tab, label: 'History', icon: Clock },
+    { id: 'stats' as Tab, label: 'Stats', icon: Church },
     { id: 'settings' as Tab, label: 'Settings', icon: SettingsIcon },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white pb-safe dark:border-slate-800 dark:bg-slate-950">
-      <div className="flex h-16 items-center justify-around px-4">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[2rem] bg-surface-container-lowest/95 backdrop-blur-[20px] shadow-[0_-8px_30px_rgba(0,0,0,0.05)]">
+      <div className="flex items-center justify-around px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentTab === tab.id;
@@ -30,28 +30,22 @@ export function BottomNav({ currentTab, onChange }: BottomNavProps) {
               key={tab.id}
               onClick={() => onChange(tab.id)}
               className={cn(
-                'relative flex flex-col items-center justify-center space-y-1 w-16 h-full transition-colors',
+                'relative flex flex-col items-center justify-center space-y-1 px-5 py-1.5 transition-all duration-300',
                 isActive
-                  ? 'text-indigo-600 dark:text-indigo-400'
-                  : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50'
+                  ? 'bg-secondary-container text-secondary rounded-full scale-90'
+                  : 'text-outline-variant hover:text-primary'
               )}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute -top-px left-2 right-2 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full"
-                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                />
-              )}
               <Icon
-                className={cn('h-6 w-6', isActive && 'fill-indigo-100 dark:fill-indigo-900/50')}
-                strokeWidth={isActive ? 2.5 : 2}
+                className="h-5 w-5"
+                strokeWidth={isActive ? 2.5 : 1.5}
+                fill={isActive ? 'currentColor' : 'none'}
               />
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <span className="font-label text-[10px] font-medium tracking-wide">{tab.label}</span>
             </button>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }

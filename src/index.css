@@ -2,8 +2,144 @@
 
 @custom-variant dark (&:is(.dark *));
 
+:root {
+  /* Surface hierarchy */
+  --surface: #f9f9f7;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f3f4f2;
+  --surface-container: #eceeec;
+  --surface-container-high: #e6e9e6;
+  --surface-container-highest: #e0e3e0;
+  --surface-dim: #d7dbd8;
+
+  /* Primary */
+  --primary: #4e6174;
+  --primary-dim: #425568;
+  --primary-container: #d1e5fb;
+  --on-primary: #f6f9ff;
+  --on-primary-container: #415466;
+
+  /* Secondary */
+  --secondary: #546354;
+  --secondary-dim: #495749;
+  --secondary-container: #d7e7d4;
+  --on-secondary: #edfdea;
+  --on-secondary-container: #475547;
+
+  /* Tertiary (Novenas) */
+  --tertiary: #8a4b5d;
+  --tertiary-dim: #733c4d;
+  --tertiary-container: #fae1e8;
+  --on-tertiary: #ffffff;
+  --on-tertiary-container: #4a212f;
+
+  /* Text */
+  --on-surface: #2f3332;
+  --on-surface-variant: #5c605e;
+  --outline: #777c79;
+  --outline-variant: #afb3b0;
+
+  /* Error */
+  --error: #a73b21;
+  --error-container: #fd795a;
+
+  /* Inverse */
+  --inverse-surface: #0d0f0e;
+}
+
+.dark {
+  /* Low-contrast dark, earthy aesthetic */
+  --surface: #121312;
+  --surface-container-lowest: #1a1c1a;
+  --surface-container-low: #1e201f;
+  --surface-container: #242625;
+  --surface-container-high: #2a2c2b;
+  --surface-container-highest: #303331;
+  --surface-dim: #0d0f0e;
+
+  /* Primary */
+  --primary: #b3cbe6;
+  --primary-dim: #9aaec7;
+  --primary-container: #304051;
+  --on-primary: #121f2d;
+  --on-primary-container: #e6f0fa;
+
+  /* Secondary */
+  --secondary: #b6ccb5;
+  --secondary-dim: #97ab96;
+  --secondary-container: #334233;
+  --on-secondary: #0d1e0d;
+  --on-secondary-container: #dcebdc;
+
+  /* Tertiary (Novenas) */
+  --tertiary: #eeaabc;
+  --tertiary-dim: #cc899a;
+  --tertiary-container: #682638;
+  --on-tertiary: #3b0014;
+  --on-tertiary-container: #ffd9e4;
+
+  /* Text */
+  --on-surface: #e0e3e0;
+  --on-surface-variant: #b0b4b1;
+  --outline: #888d8a;
+  --outline-variant: #424644;
+
+  /* Error */
+  --error: #ffa891;
+  --error-container: #8c1d00;
+
+  /* Inverse */
+  --inverse-surface: #e0e3e0;
+}
+
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-headline: "Newsreader", serif;
+  --font-body: "Manrope", sans-serif;
+  --font-label: "Manrope", sans-serif;
+  --font-sans: "Manrope", sans-serif;
+
+  /* Surface hierarchy */
+  --color-surface: var(--surface);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-surface-dim: var(--surface-dim);
+
+  /* Primary */
+  --color-primary: var(--primary);
+  --color-primary-dim: var(--primary-dim);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary: var(--on-primary);
+  --color-on-primary-container: var(--on-primary-container);
+
+  /* Secondary */
+  --color-secondary: var(--secondary);
+  --color-secondary-dim: var(--secondary-dim);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary: var(--on-secondary);
+  --color-on-secondary-container: var(--on-secondary-container);
+
+  /* Tertiary (Novenas) */
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-dim: var(--tertiary-dim);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+
+  /* Text */
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+
+  /* Error */
+  --color-error: var(--error);
+  --color-error-container: var(--error-container);
+
+  /* Inverse */
+  --color-inverse-surface: var(--inverse-surface);
 }
 
 @layer utilities {
@@ -20,4 +156,20 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Glass panel */
+.glass-panel {
+  background: rgba(249, 249, 247, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Ambient shadow */
+.shadow-ambient {
+  box-shadow: 0 12px 40px rgba(47, 51, 50, 0.06);
+}
+
+.shadow-ambient-sm {
+  box-shadow: 0 4px 20px rgba(47, 51, 50, 0.03);
 }

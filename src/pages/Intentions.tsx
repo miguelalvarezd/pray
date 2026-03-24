@@ -22,26 +22,16 @@ interface IntentionsProps {
 }
 
 export function Intentions({ 
-  intentions, 
-  novenas, 
-  addIntention, 
-  updateIntention, 
-  deleteIntention, 
-  addNovena, 
-  deleteNovena, 
-  currentDate 
+  intentions, novenas, addIntention, updateIntention, deleteIntention, addNovena, deleteNovena, currentDate 
 }: IntentionsProps) {
   const [view, setView] = useState<'intentions' | 'novenas'>('intentions');
   const [isAdding, setIsAdding] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   
-  // Intention form state
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newDate, setNewDate] = useState('');
   const [newPriority, setNewPriority] = useState<Priority>('medium');
-
-  // Novena form state
   const [newNovenaSaint, setNewNovenaSaint] = useState('');
   const [newNovenaIntention, setNewNovenaIntention] = useState('');
   const [newNovenaStartDate, setNewNovenaStartDate] = useState(format(currentDate, 'yyyy-MM-dd'));
@@ -49,136 +39,96 @@ export function Intentions({
   const handleAddIntention = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
-
-    addIntention({
-      title: newTitle.trim(),
-      description: newDesc.trim() || undefined,
-      targetDate: newDate || undefined,
-      priority: newPriority,
-    });
-
-    setNewTitle('');
-    setNewDesc('');
-    setNewDate('');
-    setNewPriority('medium');
-    setIsAdding(false);
+    addIntention({ title: newTitle.trim(), description: newDesc.trim() || undefined, targetDate: newDate || undefined, priority: newPriority });
+    setNewTitle(''); setNewDesc(''); setNewDate(''); setNewPriority('medium'); setIsAdding(false);
   };
 
   const handleAddNovena = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNovenaSaint.trim() || !newNovenaIntention.trim()) return;
-
-    addNovena({
-      title: newNovenaSaint.trim(),
-      intention: newNovenaIntention.trim(),
-      startDate: newNovenaStartDate || format(currentDate, 'yyyy-MM-dd'),
-    });
-
-    setNewNovenaSaint('');
-    setNewNovenaIntention('');
-    setNewNovenaStartDate(format(currentDate, 'yyyy-MM-dd'));
-    setIsAdding(false);
+    addNovena({ title: newNovenaSaint.trim(), intention: newNovenaIntention.trim(), startDate: newNovenaStartDate || format(currentDate, 'yyyy-MM-dd') });
+    setNewNovenaSaint(''); setNewNovenaIntention(''); setNewNovenaStartDate(format(currentDate, 'yyyy-MM-dd')); setIsAdding(false);
   };
 
   const activeIntentions = sortIntentions(intentions.filter(i => !i.isArchived), currentDate);
   const archivedIntentions = intentions.filter(i => i.isArchived);
   const displayedIntentions = showArchived ? archivedIntentions : activeIntentions;
+  const activeNovenas = novenas.filter(n => differenceInDays(currentDate, parseISO(n.startDate)) <= 8);
+  const historicalNovenas = novenas.filter(n => differenceInDays(currentDate, parseISO(n.startDate)) > 8);
+  const displayedNovenas = showArchived ? historicalNovenas : activeNovenas;
 
   return (
-    <div className="space-y-6 pb-24 pt-12 px-4 max-w-md mx-auto">
-      <header className="flex items-center justify-between">
-        <h1 className="text-3xl font-semibold tracking-tight">Prayers</h1>
-        <Button size="icon" variant="ghost" onClick={() => setIsAdding(!isAdding)}>
+    <div className="space-y-10 pb-32 pt-12 px-6 max-w-screen-sm mx-auto">
+      {/* Editorial Header */}
+      <header className="flex items-start justify-between">
+        <div className="space-y-2">
+          <p className="font-label text-xs uppercase tracking-[0.15em] text-on-surface-variant">Active Requests</p>
+          <h1 className="font-headline text-4xl font-medium text-on-surface leading-tight">
+            Your Heart's<br/><span className="italic">Quiet Echoes</span>
+          </h1>
+        </div>
+        <button
+          onClick={() => setIsAdding(!isAdding)}
+          className="mt-4 w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-ambient-sm hover:opacity-90 transition-all active:scale-95"
+        >
           <motion.div animate={{ rotate: isAdding ? 45 : 0 }} transition={{ duration: 0.2 }}>
-            <Plus className="h-6 w-6" />
+            <Plus className="h-5 w-5" />
           </motion.div>
-        </Button>
+        </button>
       </header>
 
-      <div className="flex p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl">
+      {/* View Toggle */}
+      <div className="flex gap-2">
         <button
-          onClick={() => { setView('intentions'); setIsAdding(false); }}
+          onClick={() => { setView('intentions'); setIsAdding(false); setShowArchived(false); }}
           className={cn(
-            "flex-1 py-2 text-sm font-medium rounded-lg transition-all",
-            view === 'intentions' ? "bg-white dark:bg-slate-950 shadow-sm text-slate-900 dark:text-slate-50" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            "px-5 py-2 rounded-full font-label text-sm font-medium tracking-wide transition-all",
+            view === 'intentions' ? "bg-secondary-container text-on-secondary-container" : "text-on-surface-variant hover:bg-surface-container"
           )}
         >
           Intentions
         </button>
         <button
-          onClick={() => { setView('novenas'); setIsAdding(false); }}
+          onClick={() => { setView('novenas'); setIsAdding(false); setShowArchived(false); }}
           className={cn(
-            "flex-1 py-2 text-sm font-medium rounded-lg transition-all",
-            view === 'novenas' ? "bg-white dark:bg-slate-950 shadow-sm text-slate-900 dark:text-slate-50" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            "px-5 py-2 rounded-full font-label text-sm font-medium tracking-wide transition-all",
+            view === 'novenas' ? "bg-tertiary-container text-on-tertiary-container" : "text-on-surface-variant hover:bg-surface-container"
           )}
         >
           Novenas
         </button>
       </div>
 
+      {/* Add Forms */}
       <AnimatePresence>
         {isAdding && view === 'intentions' && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            <Card className="border-indigo-100 bg-indigo-50/50 dark:border-indigo-900/50 dark:bg-indigo-950/20">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">New Intention</CardTitle>
-              </CardHeader>
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}>
+            <Card className="bg-surface-container-low">
+              <CardHeader><CardTitle>New Intention</CardTitle></CardHeader>
               <CardContent>
                 <form onSubmit={handleAddIntention} className="space-y-4">
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="What are you praying for?"
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
-                      autoFocus
-                    />
-                    <Textarea
-                      placeholder="Additional details (optional)"
-                      value={newDesc}
-                      onChange={(e) => setNewDesc(e.target.value)}
-                      className="min-h-[60px]"
-                    />
-                  </div>
-                  
+                  <Input placeholder="What are you praying for?" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} autoFocus />
+                  <Textarea placeholder="Additional details (optional)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} className="min-h-[60px]" />
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Target Date</label>
+                      <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant">Target Date</label>
                       <div className="relative">
-                        <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                        <Input
-                          type="date"
-                          value={newDate}
-                          onChange={(e) => setNewDate(e.target.value)}
-                          className="pl-9"
-                        />
+                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-outline-variant" />
+                        <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="pl-9" />
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Priority</label>
-                      <select
-                        value={newPriority}
-                        onChange={(e) => setNewPriority(e.target.value as Priority)}
-                        className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:focus-visible:ring-indigo-400"
-                      >
+                      <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant">Priority</label>
+                      <select value={newPriority} onChange={(e) => setNewPriority(e.target.value as Priority)} className="flex h-11 w-full rounded-xl bg-surface-container px-4 py-3 font-body text-sm text-on-surface border-b-2 border-transparent focus-visible:outline-none focus-visible:border-b-primary transition-colors">
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
                       </select>
                     </div>
                   </div>
-
-                  <div className="flex justify-end space-x-2 pt-2">
-                    <Button type="button" variant="ghost" onClick={() => setIsAdding(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={!newTitle.trim()}>
-                      Add Intention
-                    </Button>
+                  <div className="flex justify-end gap-3 pt-2">
+                    <Button type="button" variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>
+                    <Button type="submit" disabled={!newTitle.trim()}>Add Intention</Button>
                   </div>
                 </form>
               </CardContent>
@@ -189,54 +139,26 @@ export function Intentions({
 
       <AnimatePresence>
         {isAdding && view === 'novenas' && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            <Card className="border-indigo-100 bg-indigo-50/50 dark:border-indigo-900/50 dark:bg-indigo-950/20">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">New Novena</CardTitle>
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}>
+            <Card className="bg-surface-container-low">
+              <CardHeader>
+                <CardTitle>New Novena</CardTitle>
                 <CardDescription>A 9-day prayer to a specific saint or for a specific intention.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleAddNovena} className="space-y-4">
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Saint or Novena Name (e.g., St. Jude)"
-                      value={newNovenaSaint}
-                      onChange={(e) => setNewNovenaSaint(e.target.value)}
-                      autoFocus
-                    />
-                    <Textarea
-                      placeholder="Your intention for this novena"
-                      value={newNovenaIntention}
-                      onChange={(e) => setNewNovenaIntention(e.target.value)}
-                      className="min-h-[60px]"
-                    />
-                  </div>
-                  
+                  <Input placeholder="Saint or Novena Name" value={newNovenaSaint} onChange={(e) => setNewNovenaSaint(e.target.value)} autoFocus />
+                  <Textarea placeholder="Your intention for this novena" value={newNovenaIntention} onChange={(e) => setNewNovenaIntention(e.target.value)} className="min-h-[60px]" />
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Start Date</label>
+                    <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant">Start Date</label>
                     <div className="relative">
-                      <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        type="date"
-                        value={newNovenaStartDate}
-                        onChange={(e) => setNewNovenaStartDate(e.target.value)}
-                        className="pl-9"
-                      />
+                      <Calendar className="absolute left-3 top-3 h-4 w-4 text-outline-variant" />
+                      <Input type="date" value={newNovenaStartDate} onChange={(e) => setNewNovenaStartDate(e.target.value)} className="pl-9" />
                     </div>
                   </div>
-
-                  <div className="flex justify-end space-x-2 pt-2">
-                    <Button type="button" variant="ghost" onClick={() => setIsAdding(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={!newNovenaSaint.trim() || !newNovenaIntention.trim()}>
-                      Start Novena
-                    </Button>
+                  <div className="flex justify-end gap-3 pt-2">
+                    <Button type="button" variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>
+                    <Button type="submit" disabled={!newNovenaSaint.trim() || !newNovenaIntention.trim()} className="bg-tertiary hover:bg-tertiary-dim text-on-tertiary">Start Novena</Button>
                   </div>
                 </form>
               </CardContent>
@@ -245,111 +167,56 @@ export function Intentions({
         )}
       </AnimatePresence>
 
+      {/* Intentions List */}
       {view === 'intentions' && (
         <>
-          <div className="flex space-x-2 mb-4">
-            <Button
-              variant={!showArchived ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setShowArchived(false)}
-              className="rounded-full"
-            >
+          <div className="flex gap-2">
+            <button onClick={() => setShowArchived(false)} className={cn("px-4 py-1.5 rounded-full font-label text-xs font-semibold uppercase tracking-wider transition-all", !showArchived ? "bg-primary-container text-on-primary-container" : "text-on-surface-variant hover:bg-surface-container")}>
               Active ({activeIntentions.length})
-            </Button>
-            <Button
-              variant={showArchived ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setShowArchived(true)}
-              className="rounded-full"
-            >
+            </button>
+            <button onClick={() => setShowArchived(true)} className={cn("px-4 py-1.5 rounded-full font-label text-xs font-semibold uppercase tracking-wider transition-all", showArchived ? "bg-primary-container text-on-primary-container" : "text-on-surface-variant hover:bg-surface-container")}>
               Archived ({archivedIntentions.length})
-            </Button>
+            </button>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <AnimatePresence mode="popLayout">
               {displayedIntentions.length === 0 ? (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-center py-12 text-slate-500 dark:text-slate-400"
-                >
-                  <p>{showArchived ? 'No archived intentions.' : 'No active intentions.'}</p>
-                  {!showArchived && !isAdding && (
-                    <Button variant="link" onClick={() => setIsAdding(true)} className="mt-2">
-                      Add your first intention
-                    </Button>
-                  )}
+                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center py-16 text-on-surface-variant">
+                  <p className="font-body italic">{showArchived ? 'No archived intentions.' : 'No active intentions.'}</p>
+                  {!showArchived && !isAdding && <Button variant="link" onClick={() => setIsAdding(true)} className="mt-4">Add your first intention</Button>}
                 </motion.div>
               ) : (
                 displayedIntentions.map((intention) => {
                   const urgency = calculateUrgency(intention, currentDate);
                   const isUrgent = urgency > 40 && !intention.isArchived;
-
                   return (
-                    <motion.div
-                      key={intention.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <Card className={cn(
-                        "transition-all",
-                        isUrgent && "border-orange-200 bg-orange-50/30 dark:border-orange-900/30 dark:bg-orange-950/10"
-                      )}>
-                        <CardContent className="p-4">
+                    <motion.div key={intention.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }} transition={{ duration: 0.25 }}>
+                      <Card className={cn(isUrgent && "bg-error-container/10")}>
+                        <CardContent className="p-6">
                           <div className="flex justify-between items-start">
-                            <div className="space-y-1 pr-4">
-                              <div className="flex items-center space-x-2">
-                                <h3 className="font-medium leading-none">{intention.title}</h3>
-                                {isUrgent && <AlertCircle className="h-3.5 w-3.5 text-orange-500" />}
+                            <div className="space-y-2 pr-4">
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-headline text-xl text-on-surface">{intention.title}</h3>
+                                {isUrgent && <AlertCircle className="h-3.5 w-3.5 text-error" />}
                               </div>
-                              {intention.description && (
-                                <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
-                                  {intention.description}
-                                </p>
-                              )}
-                              
-                              <div className="flex flex-wrap gap-2 mt-3">
-                                <span className={cn(
-                                  "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
-                                  intention.priority === 'high' ? "bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-900/20 dark:text-red-400 dark:ring-red-500/20" :
-                                  intention.priority === 'medium' ? "bg-yellow-50 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-900/20 dark:text-yellow-400 dark:ring-yellow-500/20" :
-                                  "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-500/20"
-                                )}>
-                                  {intention.priority}
-                                </span>
-                                {intention.targetDate && (
-                                  <span className="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 dark:bg-slate-800/50 dark:text-slate-400 dark:ring-slate-700/50">
-                                    Target: {format(parseISO(intention.targetDate), 'MMM d, yyyy')}
-                                  </span>
-                                )}
+                              {intention.description && <p className="font-body text-sm text-on-surface-variant line-clamp-2">{intention.description}</p>}
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                <span className={cn("inline-flex items-center rounded-full px-3 py-1 font-label text-[10px] font-bold uppercase tracking-[0.1em]",
+                                  intention.priority === 'high' ? "bg-error-container/20 text-error" :
+                                  intention.priority === 'medium' ? "bg-tertiary-container text-on-tertiary-container" :
+                                  "bg-secondary-container text-on-secondary-container"
+                                )}>{intention.priority}</span>
+                                {intention.targetDate && <span className="inline-flex items-center rounded-full bg-surface-container px-3 py-1 font-label text-[10px] text-on-surface-variant uppercase tracking-[0.1em]">Target: {format(parseISO(intention.targetDate), 'MMM d, yyyy')}</span>}
                               </div>
                             </div>
-                            
-                            <div className="flex flex-col space-y-2 shrink-0">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-slate-400 hover:text-slate-900 dark:hover:text-slate-50"
-                                onClick={() => updateIntention(intention.id, { isArchived: !intention.isArchived })}
-                                title={intention.isArchived ? "Restore" : "Archive"}
-                              >
+                            <div className="flex flex-col gap-2 shrink-0">
+                              <button className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container hover:text-on-surface transition-colors" onClick={() => updateIntention(intention.id, { isArchived: !intention.isArchived })} title={intention.isArchived ? "Restore" : "Archive"}>
                                 {intention.isArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-slate-400 hover:text-red-600 dark:hover:text-red-400"
-                                onClick={() => deleteIntention(intention.id)}
-                                title="Delete"
-                              >
+                              </button>
+                              <button className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-error-container/20 hover:text-error transition-colors" onClick={() => deleteIntention(intention.id)} title="Delete">
                                 <Trash2 className="h-4 w-4" />
-                              </Button>
+                              </button>
                             </div>
                           </div>
                         </CardContent>
@@ -363,88 +230,64 @@ export function Intentions({
         </>
       )}
 
+      {/* Novenas List */}
       {view === 'novenas' && (
-        <div className="space-y-3">
-          <AnimatePresence mode="popLayout">
-            {novenas.length === 0 ? (
-              <motion.div
-                key="empty-novena"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-12 text-slate-500 dark:text-slate-400"
-              >
-                <p>No active novenas.</p>
-                {!isAdding && (
-                  <Button variant="link" onClick={() => setIsAdding(true)} className="mt-2">
-                    Start a novena
-                  </Button>
-                )}
-              </motion.div>
-            ) : (
-              novenas.map((novena) => {
-                const startDate = parseISO(novena.startDate);
-                const daysDiff = differenceInDays(currentDate, startDate);
-                const dayOfNovena = daysDiff + 1;
-                const isCompleted = dayOfNovena > 9;
-                const isFuture = dayOfNovena < 1;
+        <>
+          <div className="flex gap-2">
+            <button onClick={() => setShowArchived(false)} className={cn("px-4 py-1.5 rounded-full font-label text-xs font-semibold uppercase tracking-wider transition-all", !showArchived ? "bg-tertiary-container text-on-tertiary-container" : "text-on-surface-variant hover:bg-surface-container")}>
+              Active ({activeNovenas.length})
+            </button>
+            <button onClick={() => setShowArchived(true)} className={cn("px-4 py-1.5 rounded-full font-label text-xs font-semibold uppercase tracking-wider transition-all", showArchived ? "bg-tertiary-container text-on-tertiary-container" : "text-on-surface-variant hover:bg-surface-container")}>
+              History ({historicalNovenas.length})
+            </button>
+          </div>
 
-                return (
-                  <motion.div
-                    key={novena.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    <Card className={cn(
-                      "transition-all",
-                      isCompleted && "opacity-60"
-                    )}>
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-1 pr-4">
-                            <div className="flex items-center space-x-2">
-                              <BookHeart className="h-4 w-4 text-indigo-500" />
-                              <h3 className="font-medium leading-none">{novena.title}</h3>
-                            </div>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                              {novena.intention}
-                            </p>
-                            
-                            <div className="flex flex-wrap gap-2 mt-3">
-                              <span className={cn(
-                                "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
-                                isCompleted ? "bg-slate-50 text-slate-600 ring-slate-500/10 dark:bg-slate-800/50 dark:text-slate-400 dark:ring-slate-700/50" :
-                                isFuture ? "bg-slate-50 text-slate-600 ring-slate-500/10 dark:bg-slate-800/50 dark:text-slate-400 dark:ring-slate-700/50" :
-                                "bg-indigo-50 text-indigo-700 ring-indigo-600/20 dark:bg-indigo-900/20 dark:text-indigo-400 dark:ring-indigo-500/20"
+          <div className="space-y-4">
+            <AnimatePresence mode="popLayout">
+              {displayedNovenas.length === 0 ? (
+                <motion.div key="empty-novena" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center py-16 text-on-surface-variant">
+                  <p className="font-body italic">{showArchived ? 'No past novenas.' : 'No active novenas.'}</p>
+                  {!showArchived && !isAdding && <Button variant="link" onClick={() => setIsAdding(true)} className="mt-4 text-tertiary hover:text-tertiary-dim">Start a novena</Button>}
+                </motion.div>
+              ) : (
+                displayedNovenas.map((novena) => {
+                  const startDate = parseISO(novena.startDate);
+                  const daysDiff = differenceInDays(currentDate, startDate);
+                  const dayOfNovena = daysDiff + 1;
+                  const isCompleted = dayOfNovena > 9;
+                  const isFuture = dayOfNovena < 1;
+                  return (
+                    <motion.div key={novena.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }} transition={{ duration: 0.25 }}>
+                      <Card className={cn(isCompleted && "opacity-60")}>
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div className="space-y-2 pr-4">
+                              <div className="flex items-center gap-2">
+                                <BookHeart className="h-4 w-4 text-tertiary" />
+                                <h3 className="font-headline text-xl text-on-surface">{novena.title}</h3>
+                              </div>
+                              <p className="font-body text-sm text-on-surface-variant">{novena.intention}</p>
+                              <span className={cn("inline-flex items-center rounded-full px-3 py-1 font-label text-[10px] font-bold uppercase tracking-[0.1em]",
+                                isCompleted ? "bg-surface-container text-on-surface-variant" :
+                                isFuture ? "bg-surface-container text-on-surface-variant" :
+                                "bg-tertiary-container text-on-tertiary-container"
                               )}>
                                 {isCompleted ? 'Completed' : isFuture ? `Starts ${format(startDate, 'MMM d')}` : `Day ${dayOfNovena} of 9`}
                               </span>
                             </div>
-                          </div>
-                          
-                          <div className="flex flex-col space-y-2 shrink-0">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-slate-400 hover:text-red-600 dark:hover:text-red-400"
-                              onClick={() => deleteNovena(novena.id)}
-                              title="Delete"
-                            >
+                            <button className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-error-container/20 hover:text-error transition-colors" onClick={() => deleteNovena(novena.id)} title="Delete">
                               <Trash2 className="h-4 w-4" />
-                            </Button>
+                            </button>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })
-            )}
-          </AnimatePresence>
-        </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })
+              )}
+            </AnimatePresence>
+          </div>
+        </>
       )}
     </div>
   );

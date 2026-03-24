@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive';
+  variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
@@ -13,21 +13,23 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center whitespace-nowrap rounded-full font-label text-sm font-semibold tracking-wide transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95',
           {
-            'bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600':
+            'bg-gradient-to-b from-primary to-primary-dim text-on-primary hover:opacity-90 shadow-ambient-sm':
               variant === 'default',
-            'bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-700':
+            'bg-surface-container-high text-on-surface hover:bg-surface-container-highest':
               variant === 'secondary',
-            'border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 dark:hover:text-slate-50':
+            'bg-surface-container-low text-on-surface-variant hover:bg-surface-container':
               variant === 'outline',
-            'hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-50':
+            'hover:bg-surface-container text-on-surface-variant':
               variant === 'ghost',
-            'bg-red-500 text-slate-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-slate-50 dark:hover:bg-red-900/90':
+            'bg-error text-on-primary hover:opacity-90':
               variant === 'destructive',
-            'h-10 px-4 py-2': size === 'default',
-            'h-9 rounded-md px-3': size === 'sm',
-            'h-11 rounded-md px-8': size === 'lg',
+            'text-primary underline-offset-4 hover:underline font-medium':
+              variant === 'link',
+            'h-10 px-5 py-2': size === 'default',
+            'h-9 px-4 text-xs': size === 'sm',
+            'h-12 px-8 text-sm': size === 'lg',
             'h-10 w-10': size === 'icon',
           },
           className

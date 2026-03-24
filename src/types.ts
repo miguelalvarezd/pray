@@ -25,18 +25,94 @@ export interface DailyLog {
   completedNovenas?: string[]; // IDs of novenas prayed for today
 }
 
+export interface PrayerSection {
+  title: string;
+  content?: string;
+  items?: { icon?: string; text: string }[];
+}
+
 export interface Prayer {
   id: string;
   title: string;
+  subtitle?: string;
   icon?: string;
+  sections?: PrayerSection[];
 }
 
 export const DEFAULT_PRAYERS: Prayer[] = [
-  { id: 'morning_prayer', title: 'Morning Prayer', icon: 'Sun' },
-
-  { id: 'mass', title: 'Mass', icon: 'Church' },
-  { id: 'rosary', title: 'Rosary', icon: 'Crown' },
-  { id: 'evening_prayer', title: 'Evening Prayer', icon: 'Moon' },
-  { id: 'bible_reading', title: 'Bible Reading', icon: 'Book' },
-  
+  { 
+    id: 'morning_prayer', 
+    title: 'Morning Prayer', 
+    subtitle: 'LITURGY OF THE HOURS',
+    icon: 'Sun',
+    sections: [
+      {
+        title: "MORNING OFFERING",
+        content: "O Jesus, through the Immaculate Heart of Mary, I offer you my prayers, works, joys, and sufferings of this day in union with the Holy Sacrifice of the Mass throughout the world."
+      }
+    ]
+  },
+  { 
+    id: 'mass', 
+    title: 'Holy Mass', 
+    subtitle: 'SACRAMENTAL LIFE',
+    icon: 'Church',
+    sections: [
+      {
+        title: "SAINT OF THE DAY",
+        content: "St. Martin de Porres"
+      },
+      {
+        title: "TODAY'S READINGS",
+        items: [
+          { icon: 'Book', text: 'Romans 11:1-2a, 11-12, 25-29' },
+          { icon: 'Music', text: 'Psalm 94' },
+          { icon: 'Book', text: 'Luke 14:1, 7-11' }
+        ]
+      }
+    ]
+  },
+  { 
+    id: 'rosary', 
+    title: 'Rosary', 
+    subtitle: 'MARIAN DEVOTION',
+    icon: 'Crown',
+    sections: [
+      {
+        title: "TODAY'S MYSTERIES",
+        content: "Sorrowful Mysteries",
+        items: [
+          { text: "1. The Agony in the Garden" },
+          { text: "2. The Scourging at the Pillar" },
+          { text: "3. The Crowning with Thorns" },
+          { text: "4. The Carrying of the Cross" },
+          { text: "5. The Crucifixion" }
+        ]
+      }
+    ]
+  },
+  { 
+    id: 'evening_prayer', 
+    title: 'Evening Prayer', 
+    subtitle: 'LITURGY OF THE HOURS',
+    icon: 'Moon',
+    sections: [
+      {
+        title: "EXAMEN",
+        content: "Review the day with gratitude. Note where you felt God's presence and where you fell short. Ask for forgiveness and grace for tomorrow."
+      }
+    ]
+  },
+  { 
+    id: 'bible_reading', 
+    title: 'Bible Reading', 
+    subtitle: 'LECTIO DIVINA',
+    icon: 'Book',
+    sections: [
+      {
+        title: "SUGGESTED READING",
+        content: "Gospel of John, Chapter 15"
+      }
+    ]
+  },
 ];
