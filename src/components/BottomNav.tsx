@@ -30,7 +30,7 @@ export function BottomNav({ currentTab, onChange }: BottomNavProps) {
               key={tab.id}
               onClick={() => onChange(tab.id)}
               className={cn(
-                'relative flex flex-col items-center justify-center space-y-1 px-5 py-1.5 transition-all duration-300',
+                'relative flex flex-1 flex-col items-center justify-center space-y-1 px-3 py-1.5 transition-all duration-300',
                 isActive
                   ? 'bg-secondary-container text-secondary rounded-full scale-90'
                   : 'text-outline-variant hover:text-primary'
