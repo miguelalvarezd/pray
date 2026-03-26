@@ -43,6 +43,32 @@
   --error: #a73b21;
   --error-container: #fd795a;
 
+  /* Liturgical colors (Light Mode) */
+  --color-liturgical-purple: #6b4c7a;
+  --color-on-liturgical-purple: #ffffff;
+  --color-liturgical-purple-container: #e8d7f0;
+  --color-on-liturgical-purple-container: #452b52;
+
+  --color-liturgical-red: #8b3a3a;
+  --color-on-liturgical-red: #ffffff;
+  --color-liturgical-red-container: #f2cece;
+  --color-on-liturgical-red-container: #5c2121;
+
+  --color-liturgical-white: #e8e2c8;
+  --color-on-liturgical-white: #2f3332;
+  --color-liturgical-white-container: #f9f6ea;
+  --color-on-liturgical-white-container: #54503e;
+
+  --color-liturgical-rose: #bf6b84;
+  --color-on-liturgical-rose: #ffffff;
+  --color-liturgical-rose-container: #f7dbe4;
+  --color-on-liturgical-rose-container: #7a3a50;
+
+  --color-liturgical-green: #546354;
+  --color-on-liturgical-green: #ffffff;
+  --color-liturgical-green-container: #d7e7d4;
+  --color-on-liturgical-green-container: #263326;
+
   /* Inverse */
   --inverse-surface: #0d0f0e;
 }
@@ -87,6 +113,32 @@
   /* Error */
   --error: #ffa891;
   --error-container: #8c1d00;
+
+  /* Liturgical colors (Dark Mode) */
+  --color-liturgical-purple: #bfa1ce;
+  --color-on-liturgical-purple: #3f204d;
+  --color-liturgical-purple-container: #543563;
+  --color-on-liturgical-purple-container: #e8d7f0;
+
+  --color-liturgical-red: #d98f8f;
+  --color-on-liturgical-red: #4d1515;
+  --color-liturgical-red-container: #732626;
+  --color-on-liturgical-red-container: #f2cece;
+
+  --color-liturgical-white: #d1caad;
+  --color-on-liturgical-white: #383525;
+  --color-liturgical-white-container: #4f4b36;
+  --color-on-liturgical-white-container: #f9f6ea;
+
+  --color-liturgical-rose: #e6a8bb;
+  --color-on-liturgical-rose: #5c2035;
+  --color-liturgical-rose-container: #8c3b57;
+  --color-on-liturgical-rose-container: #f7dbe4;
+
+  --color-liturgical-green: #a4bfa3;
+  --color-on-liturgical-green: #1a261a;
+  --color-liturgical-green-container: #394a39;
+  --color-on-liturgical-green-container: #d7e7d4;
 
   /* Inverse */
   --inverse-surface: #e0e3e0;

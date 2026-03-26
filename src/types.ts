@@ -23,6 +23,7 @@ export interface DailyLog {
   completedPrayers: string[]; // IDs of completed standard prayers
   completedIntentions: string[]; // IDs of intentions prayed for today
   completedNovenas?: string[]; // IDs of novenas prayed for today
+  journal?: string;
 }
 
 export interface PrayerSection {
@@ -36,13 +37,14 @@ export interface Prayer {
   title: string;
   subtitle?: string;
   icon?: string;
+  themeColor?: string; // e.g. 'green', 'purple', 'white', 'red', 'rose'
   sections?: PrayerSection[];
 }
 
 export const DEFAULT_PRAYERS: Prayer[] = [
-  { 
-    id: 'morning_prayer', 
-    title: 'Morning Prayer', 
+  {
+    id: 'morning_prayer',
+    title: 'Morning Prayer',
     subtitle: 'LITURGY OF THE HOURS',
     icon: 'Sun',
     sections: [
@@ -52,9 +54,9 @@ export const DEFAULT_PRAYERS: Prayer[] = [
       }
     ]
   },
-  { 
-    id: 'mass', 
-    title: 'Holy Mass', 
+  {
+    id: 'mass',
+    title: 'Holy Mass',
     subtitle: 'SACRAMENTAL LIFE',
     icon: 'Church',
     sections: [
@@ -72,9 +74,9 @@ export const DEFAULT_PRAYERS: Prayer[] = [
       }
     ]
   },
-  { 
-    id: 'rosary', 
-    title: 'Rosary', 
+  {
+    id: 'rosary',
+    title: 'Rosary',
     subtitle: 'MARIAN DEVOTION',
     icon: 'Crown',
     sections: [
@@ -91,9 +93,9 @@ export const DEFAULT_PRAYERS: Prayer[] = [
       }
     ]
   },
-  { 
-    id: 'evening_prayer', 
-    title: 'Evening Prayer', 
+  {
+    id: 'evening_prayer',
+    title: 'Evening Prayer',
     subtitle: 'LITURGY OF THE HOURS',
     icon: 'Moon',
     sections: [
@@ -103,9 +105,9 @@ export const DEFAULT_PRAYERS: Prayer[] = [
       }
     ]
   },
-  { 
-    id: 'bible_reading', 
-    title: 'Bible Reading', 
+  {
+    id: 'bible_reading',
+    title: 'Bible Reading',
     subtitle: 'LECTIO DIVINA',
     icon: 'Book',
     sections: [

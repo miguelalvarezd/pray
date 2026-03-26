@@ -18,15 +18,22 @@ export default function App() {
     setCurrentTab(tab);
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
-  
+
   // State
   const [intentions, setIntentions] = useLocalStorage<Intention[]>('prayer-intentions', []);
   const [novenas, setNovenas] = useLocalStorage<Novena[]>('prayer-novenas', []);
   const [logs, setLogs] = useLocalStorage<Record<string, DailyLog>>('prayer-logs', {});
   const [dateOverride, setDateOverride] = useLocalStorage<string | null>('prayer-date-override', null);
-  
-  // Current day logic
-  const today = dateOverride ? new Date(`${dateOverride}T12:00:00`) : new Date();
+
+  // Current day logic (starts at 4:00 AM)
+  const getLogicalDate = () => {
+    if (dateOverride) return new Date(`${dateOverride}T12:00:00`);
+    const now = new Date();
+    // Shift back 4 hours so 00:00-03:59 belongs to the previous logical day
+    return new Date(now.getTime() - 4 * 60 * 60 * 1000);
+  };
+
+  const today = getLogicalDate();
   const todayStr = format(today, 'yyyy-MM-dd');
   const todayLog = logs[todayStr] || { date: todayStr, completedPrayers: [], completedIntentions: [], completedNovenas: [] };
 
@@ -105,18 +112,12 @@ export default function App() {
       <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
         <main className="mx-auto w-full max-w-screen-sm">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={currentTab}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2, ease: 'easeInOut' }}
-            >
+            <div key={currentTab}>
               {renderPage()}
-            </motion.div>
+            </div>
           </AnimatePresence>
         </main>
-        
+
         <BottomNav currentTab={currentTab} onChange={handleTabChange} />
       </div>
     </ThemeProvider>
