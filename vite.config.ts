@@ -20,8 +20,8 @@ export default defineConfig(() => {
           clientsClaim: true,
         },
         manifest: {
-          name: 'Prayer Tracker',
-          short_name: 'Prayers',
+          name: 'Pray',
+          short_name: 'Pray',
           description: 'A daily prayer and intention tracker',
           theme_color: '#6366f1',
           background_color: '#020617',
