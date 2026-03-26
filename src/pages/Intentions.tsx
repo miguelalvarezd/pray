@@ -21,13 +21,13 @@ interface IntentionsProps {
   currentDate: Date;
 }
 
-export function Intentions({ 
-  intentions, novenas, addIntention, updateIntention, deleteIntention, addNovena, deleteNovena, currentDate 
+export function Intentions({
+  intentions, novenas, addIntention, updateIntention, deleteIntention, addNovena, deleteNovena, currentDate
 }: IntentionsProps) {
   const [view, setView] = useState<'intentions' | 'novenas'>('intentions');
   const [isAdding, setIsAdding] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
-  
+
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newDate, setNewDate] = useState('');
@@ -62,9 +62,9 @@ export function Intentions({
       {/* Editorial Header */}
       <header className="flex items-start justify-between">
         <div className="space-y-2">
-          <p className="font-label text-xs uppercase tracking-[0.15em] text-on-surface-variant">Active Requests</p>
+          <p className="font-label text-xs uppercase tracking-[0.15em] text-on-surface-variant">Ask and it will be given to you</p>
           <h1 className="font-headline text-4xl font-medium text-on-surface leading-tight">
-            Your Heart's<br/><span className="italic">Quiet Echoes</span>
+            Your Heart's<br /><span className="italic">Quiet Echoes</span>
           </h1>
         </div>
         <button
@@ -204,8 +204,8 @@ export function Intentions({
                               <div className="flex flex-wrap gap-2 pt-1">
                                 <span className={cn("inline-flex items-center rounded-full px-3 py-1 font-label text-[10px] font-bold uppercase tracking-[0.1em]",
                                   intention.priority === 'high' ? "bg-error-container/20 text-error" :
-                                  intention.priority === 'medium' ? "bg-tertiary-container text-on-tertiary-container" :
-                                  "bg-secondary-container text-on-secondary-container"
+                                    intention.priority === 'medium' ? "bg-tertiary-container text-on-tertiary-container" :
+                                      "bg-secondary-container text-on-secondary-container"
                                 )}>{intention.priority}</span>
                                 {intention.targetDate && <span className="inline-flex items-center rounded-full bg-surface-container px-3 py-1 font-label text-[10px] text-on-surface-variant uppercase tracking-[0.1em]">Target: {format(parseISO(intention.targetDate), 'MMM d, yyyy')}</span>}
                               </div>
@@ -269,8 +269,8 @@ export function Intentions({
                               <p className="font-body text-sm text-on-surface-variant">{novena.intention}</p>
                               <span className={cn("inline-flex items-center rounded-full px-3 py-1 font-label text-[10px] font-bold uppercase tracking-[0.1em]",
                                 isCompleted ? "bg-surface-container text-on-surface-variant" :
-                                isFuture ? "bg-surface-container text-on-surface-variant" :
-                                "bg-tertiary-container text-on-tertiary-container"
+                                  isFuture ? "bg-surface-container text-on-surface-variant" :
+                                    "bg-tertiary-container text-on-tertiary-container"
                               )}>
                                 {isCompleted ? 'Completed' : isFuture ? `Starts ${format(startDate, 'MMM d')}` : `Day ${dayOfNovena} of 9`}
                               </span>

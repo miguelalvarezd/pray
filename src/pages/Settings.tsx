@@ -81,7 +81,7 @@ export function Settings({ dateOverride, setDateOverride }: SettingsProps) {
     <div className="space-y-10 pb-32 pt-12 px-6 max-w-screen-sm mx-auto">
       {/* Editorial Header */}
       <header className="space-y-2 pl-1">
-        <p className="font-label text-xs uppercase tracking-[0.15em] text-on-surface-variant">Preferences</p>
+        <p className="font-label text-xs uppercase tracking-[0.15em] text-on-surface-variant">Be still and know that I am God</p>
         <h1 className="font-headline text-4xl font-medium text-on-surface leading-tight">Settings</h1>
       </header>
 

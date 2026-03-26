@@ -146,7 +146,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
     <div className="space-y-10 pb-32 pt-12 px-6 max-w-screen-sm mx-auto relative">
       {/* Editorial Header */}
       <header className="space-y-2 pl-1">
-        <p className="font-label text-xs uppercase tracking-[0.15em] text-on-surface-variant">Your Spiritual Journey</p>
+        <p className="font-label text-xs uppercase tracking-[0.15em] text-on-surface-variant">Grow in the grace and knowledge</p>
         <h1 className="font-headline text-4xl font-medium text-on-surface leading-tight">Stats</h1>
       </header>
 
