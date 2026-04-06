@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { format, subDays, isSameMonth, startOfMonth, endOfMonth, eachDayOfInterval, parseISO, differenceInDays, subMonths, addMonths } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { DailyLog, Prayer, Novena } from '@/types';
-import { Flame, TrendingUp, ChevronLeft, ChevronRight, X, BookHeart } from 'lucide-react';
+import { Flame, TrendingUp, ChevronLeft, ChevronRight, X, BookHeart, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StatsProps {
@@ -112,6 +112,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
     const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
     let monthlyTotalPrayers = 0;
     let monthlyTotalNovenas = 0;
+    let monthlyTotalActivities = 0;
     const monthlyPrayerCounts: Record<string, number> = {};
     prayers.forEach(p => monthlyPrayerCounts[p.id] = 0);
     let daysWithAtLeastOnePrayer = 0;
@@ -127,6 +128,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
           log.completedPrayers.forEach(pid => { if (monthlyPrayerCounts[pid] !== undefined) monthlyPrayerCounts[pid]++; });
         }
         if (log.completedNovenas) monthlyTotalNovenas += log.completedNovenas.length;
+        if (log.completedActivities) monthlyTotalActivities += log.completedActivities.length;
       }
     });
 
@@ -135,7 +137,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
     else if (currentMonth > today) daysPassedInMonth = 0;
     const averagePerDay = daysPassedInMonth > 0 ? ((monthlyTotalPrayers + monthlyTotalNovenas) / daysPassedInMonth).toFixed(1) : "0.0";
 
-    return { currentStreak, longestStreak, categoryStreaks, monthlyPrayerCounts, monthlyTotalNovenas, averagePerDay, daysWithAtLeastOnePrayer, totalDaysInMonth: daysInMonth.length, daysPassedInMonth };
+    return { currentStreak, longestStreak, categoryStreaks, monthlyPrayerCounts, monthlyTotalNovenas, monthlyTotalActivities, averagePerDay, daysWithAtLeastOnePrayer, totalDaysInMonth: daysInMonth.length, daysPassedInMonth };
   }, [logs, prayers, currentMonth]);
 
   const handlePrevMonth = () => setCurrentMonth(prev => subMonths(prev, 1));
@@ -153,7 +155,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
       {/* Streak Bento Cards */}
       <div className="grid grid-cols-2 gap-4">
         <motion.button whileTap={{ scale: 0.96 }} onClick={() => setShowStreakDetails('current')}
-          className="bg-secondary-container rounded-[2rem] p-7 flex flex-col justify-between text-left min-h-[160px]">
+          className="bg-secondary-container rounded-4xl p-7 flex flex-col justify-between text-left min-h-[160px]">
           <div>
             <span className="font-label text-[10px] uppercase tracking-[0.15em] text-on-secondary-container/70">Current Streak</span>
             <motion.div key={stats.currentStreak} initial={{ scale: 1.3, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -169,7 +171,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
         </motion.button>
 
         <motion.button whileTap={{ scale: 0.96 }} onClick={() => setShowStreakDetails('best')}
-          className="bg-surface-container-low rounded-[2rem] p-7 flex flex-col justify-between text-left min-h-[160px]">
+          className="bg-surface-container-low rounded-4xl p-7 flex flex-col justify-between text-left min-h-[160px]">
           <div>
             <span className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant">Best Streak</span>
             <motion.div key={stats.longestStreak} initial={{ scale: 1.3, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -186,7 +188,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
       </div>
 
       {/* Monthly Goal Card */}
-      <div className="bg-surface-container-lowest rounded-[2rem] p-7 shadow-ambient-sm">
+      <div className="bg-surface-container-lowest rounded-4xl p-7 shadow-ambient-sm">
         <div className="flex items-center justify-between mb-3">
           <span className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant">Monthly Goal</span>
           <span className="font-headline text-3xl font-medium text-on-surface">
@@ -246,7 +248,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
           <div className="space-y-2">
             <div className="flex justify-between items-end">
               <span className="font-headline text-lg text-on-surface flex items-center gap-2">
-                <BookHeart className="h-4 w-4 text-secondary" /> Novenas
+                <BookHeart className="h-4 w-4 text-tertiary" /> Novenas
               </span>
               <span className="font-label text-xs text-on-surface-variant">{stats.monthlyTotalNovenas} days</span>
             </div>
@@ -256,6 +258,24 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.round((stats.monthlyTotalNovenas / stats.daysPassedInMonth) * 100)}%` }}
                 transition={{ duration: 0.6, delay: prayers.length * 0.1 }}
+              />
+            </div>
+          </div>
+        )}
+        {stats.monthlyTotalActivities > 0 && (
+          <div className="space-y-2">
+            <div className="flex justify-between items-end">
+              <span className="font-headline text-lg text-on-surface flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary-dim" /> Other Prayers
+              </span>
+              <span className="font-label text-xs text-on-surface-variant">{stats.monthlyTotalActivities} total</span>
+            </div>
+            <div className="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-primary-dim rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(Math.round((stats.monthlyTotalActivities / stats.daysPassedInMonth) * 100), 100)}%` }}
+                transition={{ duration: 0.6, delay: (prayers.length + 1) * 0.1 }}
               />
             </div>
           </div>
@@ -270,7 +290,7 @@ export function Stats({ logs, prayers, novenas, currentDate }: StatsProps) {
             onClick={() => setShowStreakDetails(null)}>
             <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 400, damping: 30 }} onClick={e => e.stopPropagation()}
-              className="w-full max-w-sm bg-surface-container-lowest rounded-[2rem] p-7 shadow-ambient">
+              className="w-full max-w-sm bg-surface-container-lowest rounded-4xl p-7 shadow-ambient">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-headline text-2xl text-on-surface flex items-center gap-2">
                   {showStreakDetails === 'current' ? <><Flame className="h-5 w-5 text-secondary" /> Current Streaks</> : <><TrendingUp className="h-5 w-5 text-primary" /> Best Streaks</>}

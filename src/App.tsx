@@ -35,7 +35,7 @@ export default function App() {
 
   const today = getLogicalDate();
   const todayStr = format(today, 'yyyy-MM-dd');
-  const todayLog = logs[todayStr] || { date: todayStr, completedPrayers: [], completedIntentions: [], completedNovenas: [] };
+  const todayLog = logs[todayStr] || { date: todayStr, completedPrayers: [], completedIntentions: [], completedNovenas: [], completedActivities: [] };
 
   const updateTodayLog = (newLog: DailyLog) => {
     setLogs(prev => ({ ...prev, [todayStr]: newLog }));

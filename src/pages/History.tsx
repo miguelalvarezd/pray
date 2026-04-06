@@ -2,17 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addMonths, subMonths, isSameDay, parseISO, differenceInDays } from 'date-fns';
 import { ChevronLeft, ChevronRight, BookHeart, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { DailyLog, Prayer, Novena } from '@/types';
+import { DailyLog, Prayer, Novena, DEFAULT_EXTRA_ACTIVITIES } from '@/types';
 import { cn, getThemeClasses } from '@/lib/utils';
 import { getIcon } from '@/lib/icons';
 import { getLiturgicalColorSync } from '@/lib/api';
-
-interface HistoryProps {
-  logs: Record<string, DailyLog>;
-  prayers: Prayer[];
-  novenas: Novena[];
-  currentDate: Date;
-}
 
 interface HistoryProps {
   logs: Record<string, DailyLog>;
@@ -89,82 +82,6 @@ export function History({ logs, prayers, novenas, currentDate }: HistoryProps) {
               });
 
               return (
-                // <motion.div
-                //   key={dayStr}
-                //   layout
-                //   initial={{ opacity: 0, scale: 0.95 }}
-                //   animate={{ opacity: 1, scale: 1 }}
-                //   exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
-                //   transition={{ duration: 0.0 }}
-                //   className={cn(
-                //     "rounded-[2rem] p-6 transition-all",
-                //     isCurrentDay
-                //       ? "bg-secondary-container"
-                //       : "bg-surface-container-lowest shadow-ambient-sm"
-                //   )}
-                // >
-                //   <div className="flex items-center justify-between mb-3">
-                //     <div>
-                //       <p className="font-headline text-lg text-on-surface">{format(day, 'EEEE')}</p>
-                //       <p className="font-label text-[10px] uppercase tracking-[0.1em] text-on-surface-variant">{format(day, 'MMMM d, yyyy')}</p>
-                //     </div>
-                //     <span className={cn(
-                //       "font-headline text-2xl font-semibold",
-                //       pct === 100 ? "text-secondary" : pct > 0 ? "text-primary" : "text-outline-variant"
-                //     )}>
-                //       {pct}%
-                //     </span>
-                //   </div>
-                //   {/* Progress bar */}
-                //   <div className="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
-                //     <motion.div
-                //       className={cn(
-                //         "h-full rounded-full",
-                //         pct === 100 ? "bg-secondary" : "bg-primary"
-                //       )}
-                //       initial={{ width: 0 }}
-                //       animate={{ width: `${pct}%` }}
-                //       transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-                //     />
-                //   </div>
-                //   {/* Tasks & Novenas */}
-                //   {(completed > 0 || activeNovenasForDay.length > 0) && (
-                //     <div className="flex flex-wrap gap-2 mt-4">
-                //       {/* Standard Prayers */}
-                //       {prayers.map(prayer => {
-                //         const isDone = log?.completedPrayers?.includes(prayer.id);
-
-                //         let historyColor = prayer.themeColor;
-                //         if (prayer.id === 'mass') {
-                //           historyColor = getLiturgicalColorSync(dayStr) || historyColor;
-                //         }
-
-                //         const theme = getThemeClasses(historyColor, isDone, false);
-
-                //         return (
-                //           <div key={prayer.id} title={prayer.title} className={cn(
-                //             "w-10 h-10 rounded-full flex items-center justify-center transition-all",
-                //             isDone ? cn(theme.iconBg, "shadow-ambient-sm") : "bg-surface-container text-on-surface-variant opacity-40"
-                //           )}>
-                //             {getIcon(prayer.icon, 20)}
-                //           </div>
-                //         );
-                //       })}
-                //       {/* Novenas */}
-                //       {activeNovenasForDay.map(novena => {
-                //         const isDone = log?.completedNovenas?.includes(novena.id);
-                //         return (
-                //           <div key={novena.id} title={novena.title} className={cn(
-                //             "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                //             isDone ? "bg-tertiary text-on-tertiary shadow-ambient-sm" : "bg-surface-container text-on-surface-variant opacity-40"
-                //           )}>
-                //             <BookHeart className="h-5 w-5" />
-                //           </div>
-                //         );
-                //       })}
-                //     </div>
-                //   )}
-                // </motion.div>
                 <motion.div
                   key={dayStr}
                   layout
@@ -173,7 +90,7 @@ export function History({ logs, prayers, novenas, currentDate }: HistoryProps) {
                   exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
                   transition={{ duration: 0.0 }}
                   className={cn(
-                    "rounded-[2rem] overflow-hidden transition-all",
+                    "rounded-4xl overflow-hidden transition-all",
                     isCurrentDay
                       ? "bg-secondary-container"
                       : "bg-surface-container-lowest shadow-ambient-sm"
@@ -186,7 +103,7 @@ export function History({ logs, prayers, novenas, currentDate }: HistoryProps) {
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <p className="font-headline text-lg text-on-surface">{format(day, 'EEEE')}</p>
-                        <p className="font-label text-[10px] uppercase tracking-[0.1em] text-on-surface-variant">{format(day, 'MMMM d, yyyy')}</p>
+                        <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">{format(day, 'MMMM d, yyyy')}</p>
                       </div>
                       <div className="flex items-center gap-4">
                         {log?.journal && (
@@ -247,6 +164,21 @@ export function History({ logs, prayers, novenas, currentDate }: HistoryProps) {
                               isDone ? "bg-tertiary text-on-tertiary shadow-ambient-sm" : "bg-surface-container text-on-surface-variant opacity-40"
                             )}>
                               <BookHeart className="h-5 w-5" />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {/* Extra Activities */}
+                    {log?.completedActivities && log.completedActivities.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-4">
+                        {log.completedActivities.map(actId => {
+                          const activity = DEFAULT_EXTRA_ACTIVITIES.find(a => a.id === actId);
+                          if (!activity) return null;
+                          return (
+                            <div key={actId} title={activity.name} className="flex items-center gap-1.5 rounded-full bg-primary-container/60 text-on-primary-container px-2.5 py-1.5">
+                              <span className="shrink-0 opacity-70 [&>svg]:h-3 [&>svg]:w-3">{getIcon(activity.icon)}</span>
+                              <span className="font-label text-[9px] tracking-wide">{activity.name}</span>
                             </div>
                           );
                         })}

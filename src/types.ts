@@ -1,4 +1,5 @@
 export type Priority = 'low' | 'medium' | 'high';
+export type ActivityCategory = 'sacramental' | 'devotional' | 'service' | 'spiritual';
 
 export interface Intention {
   id: string;
@@ -18,11 +19,42 @@ export interface Novena {
   createdAt: string; // ISO date string
 }
 
+export interface ExtraActivity {
+  id: string;
+  name: string;
+  icon: string;
+  category: ActivityCategory;
+}
+
+export const DEFAULT_EXTRA_ACTIVITIES: ExtraActivity[] = [
+  // Sacramental
+  { id: 'confession', name: 'Confession', icon: 'MessageSquareHeart', category: 'sacramental' },
+  { id: 'adoration', name: 'Adoration', icon: 'Sun', category: 'sacramental' },
+  // Devotional
+  { id: 'via_crucis', name: 'Via Crucis', icon: 'Cross', category: 'devotional' },
+  { id: 'holy_hour', name: 'Holy Hour', icon: 'Clock', category: 'devotional' },
+  { id: 'lectio_divina', name: 'Lectio Divina', icon: 'BookMarked', category: 'devotional' },
+  { id: 'divine_mercy', name: 'Divine Mercy Chaplet', icon: 'Droplets', category: 'devotional' },
+  { id: 'angelus', name: 'Angelus / Regina Caeli', icon: 'Bell', category: 'devotional' },
+  { id: 'litany', name: 'Litany', icon: 'Scroll', category: 'devotional' },
+  // Service
+  { id: 'volunteering', name: 'Volunteering', icon: 'HandHeart', category: 'service' },
+  { id: 'almsgiving', name: 'Almsgiving / Charity', icon: 'HandCoins', category: 'service' },
+  { id: 'visiting_sick', name: 'Visiting the Sick', icon: 'HeartHandshake', category: 'service' },
+  // Spiritual
+  { id: 'spiritual_reading', name: 'Spiritual Reading', icon: 'BookText', category: 'spiritual' },
+  { id: 'fasting', name: 'Fasting / Abstinence', icon: 'UtensilsCrossed', category: 'spiritual' },
+  { id: 'retreat', name: 'Retreat', icon: 'MountainSnow', category: 'spiritual' },
+  { id: 'pilgrimage', name: 'Pilgrimage', icon: 'Compass', category: 'spiritual' },
+  { id: 'examination', name: 'Examination of Conscience', icon: 'Brain', category: 'spiritual' },
+];
+
 export interface DailyLog {
   date: string; // YYYY-MM-DD format
   completedPrayers: string[]; // IDs of completed standard prayers
   completedIntentions: string[]; // IDs of intentions prayed for today
   completedNovenas?: string[]; // IDs of novenas prayed for today
+  completedActivities?: string[]; // IDs of extra activities done today
   journal?: string;
 }
 
@@ -45,8 +77,8 @@ export const DEFAULT_PRAYERS: Prayer[] = [
   {
     id: 'morning_prayer',
     title: 'Morning Prayer',
-    subtitle: 'LITURGY OF THE HOURS',
-    icon: 'Sun',
+    subtitle: 'LITURGY OF THE HOURS - LAUDS',
+    icon: 'Sunrise',
     sections: [
       {
         title: "MORNING OFFERING",
@@ -96,8 +128,8 @@ export const DEFAULT_PRAYERS: Prayer[] = [
   {
     id: 'evening_prayer',
     title: 'Evening Prayer',
-    subtitle: 'LITURGY OF THE HOURS',
-    icon: 'Moon',
+    subtitle: 'LITURGY OF THE HOURS - COMPLINE',
+    icon: 'MoonStar',
     sections: [
       {
         title: "EXAMEN",
