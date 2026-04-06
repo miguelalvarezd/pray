@@ -185,7 +185,7 @@ export function Settings({ dateOverride, setDateOverride }: SettingsProps) {
           <h2 className="font-headline text-xl font-medium text-on-surface">Developer Mode</h2>
           <p className="font-body text-sm text-on-surface-variant mt-1">Override the current date for testing.</p>
         </div>
-        <div className="bg-surface-container-lowest rounded-[2rem] p-6 shadow-ambient-sm">
+        <div className="bg-surface-container-lowest rounded-4xl p-6 shadow-ambient-sm">
           <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant block mb-3">Simulate Date</label>
           <div className="flex gap-3">
             <div className="relative flex-1">
@@ -204,7 +204,7 @@ export function Settings({ dateOverride, setDateOverride }: SettingsProps) {
         <div className="pl-1">
           <h2 className="font-headline text-xl font-medium text-on-surface">About</h2>
         </div>
-        <div className="bg-surface-container-low rounded-[2rem] p-6 space-y-3">
+        <div className="bg-surface-container-low rounded-4xl p-6 space-y-3">
           <p className="font-body text-sm text-on-surface-variant leading-relaxed">
             Prayer & Intention Tracker helps you maintain a consistent prayer life. Your data is stored locally on your device for privacy.
           </p>

@@ -20,7 +20,7 @@ export function BottomNav({ currentTab, onChange }: BottomNavProps) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[2rem] bg-surface-container-lowest/95 backdrop-blur-[20px] shadow-[0_-8px_30px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 rounded-t-4xl bg-surface-container-lowest/95 backdrop-blur-[20px] shadow-[0_-8px_30px_rgba(0,0,0,0.05)]">
       <div className="flex items-center justify-around px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
