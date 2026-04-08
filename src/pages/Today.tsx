@@ -380,8 +380,7 @@ export function Today({ log, updateLog, intentions, novenas, prayers, currentDat
       {/* Activity Picker Backdrop — removed instantly on close */}
       {showActivityPicker && (
         <div
-          className="fixed inset-0 z-50"
-          style={{ background: 'rgba(47, 51, 50, 0.3)', backdropFilter: 'blur(8px)' }}
+          className="fixed inset-0 z-50 overlay-backdrop"
           onClick={() => { setShowActivityPicker(false); setSheetExpanded(false); sheetDragY.set(0); }}
         />
       )}

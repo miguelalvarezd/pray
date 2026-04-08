@@ -228,3 +228,9 @@
 .shadow-ambient-sm {
   box-shadow: 0 4px 20px rgba(47, 51, 50, 0.03);
 }
+
+.overlay-backdrop {
+  background: rgba(47, 51, 50, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
