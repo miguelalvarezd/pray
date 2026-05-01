@@ -1,6 +1,12 @@
 export type Priority = 'low' | 'medium' | 'high';
 export type ActivityCategory = 'sacramental' | 'devotional' | 'service' | 'spiritual';
 
+/**
+ * Current schema version for exported backups. Bump this when the shape
+ * of persisted data changes, and add a migration step in lib/migrations.ts.
+ */
+export const SCHEMA_VERSION = 1;
+
 export interface Intention {
   id: string;
   title: string;
@@ -17,6 +23,10 @@ export interface Novena {
   intention: string;
   startDate: string; // YYYY-MM-DD format
   createdAt: string; // ISO date string
+  /** Optional prayer text copied from a library template when the novena was started. */
+  prayer?: string;
+  /** Id of the NovenaTemplate this novena was started from, if any. */
+  templateId?: string;
 }
 
 export interface ExtraActivity {

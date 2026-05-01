@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { BottomNav, Tab } from '@/components/BottomNav';
 import { Today } from '@/pages/Today';
@@ -8,11 +8,19 @@ import { Intentions } from '@/pages/Intentions';
 import { History } from '@/pages/History';
 import { Stats } from '@/pages/Stats';
 import { Settings } from '@/pages/Settings';
+import { RosaryGuide } from '@/components/rosary/RosaryGuide';
+import { MassGuide } from '@/components/mass/MassGuide';
+import { FloatingActionMenu } from '@/components/FloatingActionMenu';
+import { FloatingActionMenuIntentions } from '@/components/FloatingActionMenuIntentions';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { DailyLog, Intention, Novena, DEFAULT_PRAYERS } from '@/types';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<Tab>('today');
+  const [rosaryOpen, setRosaryOpen] = useState(false);
+  const [massOpen, setMassOpen] = useState(false);
+  const [intentionsAdding, setIntentionsAdding] = useState(false);
+  const [intentionsAddingType, setIntentionsAddingType] = useState<'intentions' | 'novenas'>('intentions');
 
   const handleTabChange = (tab: Tab) => {
     setCurrentTab(tab);
@@ -90,12 +98,16 @@ export default function App() {
           <Intentions
             intentions={intentions}
             novenas={novenas}
+            logs={logs}
             addIntention={addIntention}
             updateIntention={updateIntention}
             deleteIntention={deleteIntention}
             addNovena={addNovena}
             deleteNovena={deleteNovena}
             currentDate={today}
+            isAdding={intentionsAdding}
+            setIsAdding={setIntentionsAdding}
+            addingType={intentionsAddingType}
           />
         );
       case 'history':
@@ -107,18 +119,79 @@ export default function App() {
     }
   };
 
+  const isRosaryDone = todayLog.completedPrayers.includes('rosary');
+  const isMassDone = todayLog.completedPrayers.includes('mass');
+
+  const handleRosaryToggle = () => {
+    const prayers = todayLog.completedPrayers;
+    updateTodayLog({
+      ...todayLog,
+      completedPrayers: prayers.includes('rosary')
+        ? prayers.filter((p) => p !== 'rosary')
+        : [...prayers, 'rosary'],
+    });
+  };
+
+  const handleMassToggle = () => {
+    const prayers = todayLog.completedPrayers;
+    updateTodayLog({
+      ...todayLog,
+      completedPrayers: prayers.includes('mass')
+        ? prayers.filter((p) => p !== 'mass')
+        : [...prayers, 'mass'],
+    });
+  };
+
   return (
     <ThemeProvider defaultTheme="light" storageKey="prayer-tracker-theme">
       <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
-        <main className="mx-auto w-full max-w-screen-sm">
-          <AnimatePresence mode="wait">
-            <div key={currentTab}>
-              {renderPage()}
-            </div>
-          </AnimatePresence>
-        </main>
+        {rosaryOpen ? (
+          <RosaryGuide
+            currentDate={today}
+            onClose={() => setRosaryOpen(false)}
+            onComplete={handleRosaryToggle}
+            isDone={isRosaryDone}
+          />
+        ) : massOpen ? (
+          <MassGuide
+            currentDate={today}
+            onClose={() => setMassOpen(false)}
+            onComplete={handleMassToggle}
+            isDone={isMassDone}
+          />
+        ) : (
+          <>
+            <main className="mx-auto w-full max-w-screen-sm">
+              <AnimatePresence mode="wait">
+                <div key={currentTab}>
+                  {renderPage()}
+                </div>
+              </AnimatePresence>
+            </main>
 
-        <BottomNav currentTab={currentTab} onChange={handleTabChange} />
+            {currentTab === 'today' && (
+              <FloatingActionMenu
+                onRosary={() => setRosaryOpen(true)}
+                onMass={() => setMassOpen(true)}
+              />
+            )}
+
+            {currentTab === 'intentions' && (
+              <FloatingActionMenuIntentions
+                onAddIntention={() => {
+                  setIntentionsAddingType('intentions');
+                  setIntentionsAdding(true);
+                }}
+                onAddNovena={() => {
+                  setIntentionsAddingType('novenas');
+                  setIntentionsAdding(true);
+                }}
+              />
+            )}
+
+            <BottomNav currentTab={currentTab} onChange={handleTabChange} />
+          </>
+        )}
       </div>
     </ThemeProvider>
   );

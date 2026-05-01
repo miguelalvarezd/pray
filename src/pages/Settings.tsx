@@ -1,18 +1,17 @@
 import React, { useState, useRef } from 'react';
 import { Moon, Sun, Monitor, Calendar, Download, Upload, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { buildExport, parseBackup, applyImport } from '@/lib/migrations';
+import { SCHEMA_VERSION } from '@/types';
 
 interface SettingsProps {
   dateOverride: string | null;
   setDateOverride: (date: string | null) => void;
 }
-
-const STORAGE_KEYS = ['prayer-intentions', 'prayer-novenas', 'prayer-logs', 'prayer-date-override'];
 
 export function Settings({ dateOverride, setDateOverride }: SettingsProps) {
   const { theme, setTheme } = useTheme();
@@ -22,19 +21,12 @@ export function Settings({ dateOverride, setDateOverride }: SettingsProps) {
   const [importError, setImportError] = useState('');
 
   const handleExport = () => {
-    const backup: Record<string, unknown> = {};
-    STORAGE_KEYS.forEach(key => {
-      const value = localStorage.getItem(key);
-      if (value !== null) {
-        try { backup[key] = JSON.parse(value); }
-        catch { backup[key] = value; }
-      }
-    });
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const envelope = buildExport();
+    const blob = new Blob([JSON.stringify(envelope, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `prayer-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `prayer-backup-v${SCHEMA_VERSION}-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -49,18 +41,17 @@ export function Settings({ dateOverride, setDateOverride }: SettingsProps) {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const data = JSON.parse(event.target?.result as string);
-        const validKeys = new Set(STORAGE_KEYS);
-        const importedKeys = Object.keys(data);
-        if (!importedKeys.some(k => validKeys.has(k))) {
-          setImportError('Invalid backup file. No recognized data found.');
+        const raw = JSON.parse(event.target?.result as string);
+        const result = parseBackup(raw);
+        if (result.ok === false) {
+          setImportError(result.error);
           setImportStatus('error');
           setTimeout(() => setImportStatus('idle'), 5000);
           return;
         }
-        importedKeys.forEach(key => { if (validKeys.has(key)) localStorage.setItem(key, JSON.stringify(data[key])); });
+        applyImport(result.data);
         setImportStatus('success');
-        setTimeout(() => window.location.reload(), 5000);
+        setTimeout(() => window.location.reload(), 2000);
       } catch {
         setImportError('Could not parse backup file.');
         setImportStatus('error');
