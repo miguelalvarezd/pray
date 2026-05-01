@@ -1,5 +1,5 @@
 import { format, differenceInDays, isBefore, parseISO } from 'date-fns';
-import { Intention } from '@/types';
+import { Intention, DailyLog } from '@/types';
 
 export function calculateUrgency(intention: Intention, currentDate: Date = new Date()): number {
   if (intention.isArchived) return -1;
@@ -41,4 +41,38 @@ export function sortIntentions(intentions: Intention[], currentDate: Date = new 
   return [...intentions].sort((a, b) => {
     return calculateUrgency(b, currentDate) - calculateUrgency(a, currentDate);
   });
+}
+
+/**
+ * Counts how many distinct days an intention has been marked as prayed-for.
+ * Computed on demand from daily logs — we don't store it on the intention
+ * itself so there's nothing to keep in sync.
+ */
+export function getIntentionPrayedCount(
+  intentionId: string,
+  logs: Record<string, DailyLog>
+): number {
+  let count = 0;
+  for (const key in logs) {
+    if (logs[key]?.completedIntentions?.includes(intentionId)) count++;
+  }
+  return count;
+}
+
+/**
+ * Builds a `Record<intentionId, count>` once per logs dict. Prefer this over
+ * calling `getIntentionPrayedCount` in a tight loop.
+ */
+export function buildIntentionCountMap(
+  logs: Record<string, DailyLog>
+): Record<string, number> {
+  const map: Record<string, number> = {};
+  for (const key in logs) {
+    const ids = logs[key]?.completedIntentions;
+    if (!ids) continue;
+    for (const id of ids) {
+      map[id] = (map[id] || 0) + 1;
+    }
+  }
+  return map;
 }

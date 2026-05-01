@@ -176,6 +176,7 @@ export async function fetchDailyDevotion(): Promise<Devotion | null> {
   }
 }
 
+
 export async function getDynamicPrayers(basePrayers: Prayer[], date: Date): Promise<Prayer[]> {
   const dynamicPrayers = structuredClone(basePrayers);
 
