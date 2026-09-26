@@ -2,10 +2,10 @@ import 'package:hive_ce/hive.dart';
 
 import 'activity_category.dart';
 
-part 'extra_activity.g.dart';
+part 'activity.g.dart';
 
 @HiveType(typeId: 5)
-class ExtraActivity {
+class Activity {
   @HiveField(0)
   final String id;
 
@@ -20,7 +20,7 @@ class ExtraActivity {
   @HiveField(3)
   final ActivityCategory category;
 
-  const ExtraActivity({
+  const Activity({
     required this.id,
     required this.name,
     required this.icon,
@@ -34,7 +34,7 @@ class ExtraActivity {
         'category': category.toJson(),
       };
 
-  static ExtraActivity fromJson(Map<String, dynamic> j) => ExtraActivity(
+  static Activity fromJson(Map<String, dynamic> j) => Activity(
         id: j['id'] as String,
         name: j['name'] as String,
         icon: j['icon'] as String,

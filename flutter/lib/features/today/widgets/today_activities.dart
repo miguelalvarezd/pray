@@ -6,7 +6,7 @@ import '../../../core/icons.dart';
 import '../../../core/time/current_date_provider.dart';
 import '../../../core/time/logical_day.dart';
 import '../../../data/models/activity_category.dart';
-import '../../../data/models/extra_activity.dart';
+import '../../../data/models/activity.dart';
 import '../../../data/repositories/logs_repo.dart';
 import '../../../domain/defaults.dart';
 
@@ -17,8 +17,8 @@ const _categoryLabels = <ActivityCategory, String>{
   ActivityCategory.spiritual: 'Spiritual',
 };
 
-class OtherPrayers extends ConsumerWidget {
-  const OtherPrayers({super.key});
+class TodayActivities extends ConsumerWidget {
+  const TodayActivities({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,7 +44,7 @@ class OtherPrayers extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Other Prayers',
+          'Activities',
           style: GoogleFonts.newsreader(
             fontSize: 22,
             fontWeight: FontWeight.w500,
@@ -71,8 +71,8 @@ class OtherPrayers extends ConsumerWidget {
     );
   }
 
-  static ExtraActivity? _findActivity(String id) {
-    for (final a in kDefaultExtraActivities) {
+  static Activity? _findActivity(String id) {
+    for (final a in kDefaultActivities) {
       if (a.id == id) return a;
     }
     return null;
@@ -102,7 +102,7 @@ class OtherPrayers extends ConsumerWidget {
 
 class _CompletedChip extends StatelessWidget {
   const _CompletedChip({required this.activity, required this.onRemove});
-  final ExtraActivity activity;
+  final Activity activity;
   final VoidCallback onRemove;
 
   @override
@@ -192,8 +192,8 @@ class _PickerSheetState extends State<_PickerSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final groups = <ActivityCategory, List<ExtraActivity>>{};
-    for (final a in kDefaultExtraActivities) {
+    final groups = <ActivityCategory, List<Activity>>{};
+    for (final a in kDefaultActivities) {
       groups.putIfAbsent(a.category, () => []).add(a);
     }
 
@@ -208,7 +208,7 @@ class _PickerSheetState extends State<_PickerSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    'Other Activities',
+                    'All Activities',
                     style: GoogleFonts.newsreader(
                       fontSize: 22,
                       fontWeight: FontWeight.w500,
@@ -271,7 +271,7 @@ class _PickerRow extends StatelessWidget {
     required this.added,
     required this.onTap,
   });
-  final ExtraActivity activity;
+  final Activity activity;
   final bool added;
   final VoidCallback onTap;
 

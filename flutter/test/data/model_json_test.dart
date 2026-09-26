@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pray/data/models/daily_log.dart';
-import 'package:pray/data/models/extra_activity.dart';
+import 'package:pray/data/models/activity.dart';
 import 'package:pray/data/models/activity_category.dart';
 import 'package:pray/data/models/intention.dart';
 import 'package:pray/data/models/novena.dart';
@@ -53,17 +53,17 @@ void main() {
     expect(back.date, log.date);
     expect(back.completedPrayers, ['mass']);
     expect(back.completedNovenas, isNull);
-    expect(back.journal, isNull);
+    expect(back.gratitudeEntry, isNull);
   });
 
-  test('ExtraActivity round-trips', () {
-    const a = ExtraActivity(
+  test('Activity round-trips', () {
+    const a = Activity(
       id: 'fasting',
       name: 'Fasting',
       icon: 'UtensilsCrossed',
       category: ActivityCategory.spiritual,
     );
-    final back = ExtraActivity.fromJson(a.toJson());
+    final back = Activity.fromJson(a.toJson());
     expect(back.id, a.id);
     expect(back.category, ActivityCategory.spiritual);
   });

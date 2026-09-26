@@ -44,22 +44,22 @@ List<PrayerSection> sectionsFor(WidgetRef ref, String prayerId) {
 
 List<PrayerSection> _morning(WidgetRef ref) {
   final date = ref.watch(currentDateProvider);
-  final devotion = ref.watch(dailyDevotionProvider(date)).value;
+  final lectio = ref.watch(dailyLectioProvider(date)).value;
   return [
     const PrayerSection(
       title: 'MORNING OFFERING',
       content:
           'O Jesus, through the Immaculate Heart of Mary, I offer you my prayers, works, joys, and sufferings of this day in union with the Holy Sacrifice of the Mass throughout the world.',
     ),
-    if (devotion?.dailyPrayer != null)
-      PrayerSection(title: 'DAILY DEVOTION', content: devotion!.dailyPrayer),
+    if (lectio?.dailyPrayer != null)
+      PrayerSection(title: 'DAILY DEVOTION', content: lectio!.dailyPrayer),
   ];
 }
 
 List<PrayerSection> _mass(WidgetRef ref) {
   final date = ref.watch(currentDateProvider);
   final day = ref.watch(liturgicalDayProvider(date)).value;
-  final devotion = ref.watch(dailyDevotionProvider(date)).value;
+  final lectio = ref.watch(dailyLectioProvider(date)).value;
   final celebration = day?.celebrations.firstOrNull;
   final readings = celebration?.readings;
   final hasLitcalReadings = readings != null &&
@@ -94,18 +94,18 @@ List<PrayerSection> _mass(WidgetRef ref) {
     ));
   }
 
-  if (!hasLitcalReadings && devotion != null) {
+  if (!hasLitcalReadings && lectio != null) {
     sections.add(PrayerSection(
       title: "TODAY'S READINGS",
       items: [
-        if (devotion.firstReadingRef != null)
-          PrayerItem(icon: 'Book', text: devotion.firstReadingRef!),
-        if (devotion.psalmRef != null)
-          PrayerItem(icon: 'Music', text: devotion.psalmRef!),
-        if (devotion.secondReadingRef != null)
-          PrayerItem(icon: 'Book', text: devotion.secondReadingRef!),
-        if (devotion.gospelRef != null)
-          PrayerItem(icon: 'Book', text: devotion.gospelRef!),
+        if (lectio.firstReadingRef != null)
+          PrayerItem(icon: 'Book', text: lectio.firstReadingRef!),
+        if (lectio.psalmRef != null)
+          PrayerItem(icon: 'Music', text: lectio.psalmRef!),
+        if (lectio.secondReadingRef != null)
+          PrayerItem(icon: 'Book', text: lectio.secondReadingRef!),
+        if (lectio.gospelRef != null)
+          PrayerItem(icon: 'Book', text: lectio.gospelRef!),
       ],
     ));
   } else if (!hasLitcalReadings) {
@@ -138,24 +138,24 @@ List<PrayerSection> _rosary(WidgetRef ref) {
 
 List<PrayerSection> _evening(WidgetRef ref) {
   final date = ref.watch(currentDateProvider);
-  final devotion = ref.watch(dailyDevotionProvider(date)).value;
+  final lectio = ref.watch(dailyLectioProvider(date)).value;
   return [
     const PrayerSection(
       title: 'EXAMEN',
       content:
           "Review the day with gratitude. Note where you felt God's presence and where you fell short. Ask for forgiveness and grace for tomorrow.",
     ),
-    if (devotion?.saintReflection != null)
+    if (lectio?.saintReflection != null)
       PrayerSection(
-          title: 'EVENING REFLECTION', content: devotion!.saintReflection),
+          title: 'EVENING REFLECTION', content: lectio!.saintReflection),
   ];
 }
 
 List<PrayerSection> _bible(WidgetRef ref) {
   final date = ref.watch(currentDateProvider);
-  final devotion = ref.watch(dailyDevotionProvider(date)).value;
-  final quote = devotion?.quote;
-  final citation = devotion?.quoteCitation ?? 'The Gospel';
+  final lectio = ref.watch(dailyLectioProvider(date)).value;
+  final quote = lectio?.quote;
+  final citation = lectio?.quoteCitation ?? 'The Gospel';
   if (quote != null) {
     return [
       PrayerSection(

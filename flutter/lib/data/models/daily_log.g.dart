@@ -26,7 +26,7 @@ class DailyLogAdapter extends TypeAdapter<DailyLog> {
           : (fields[2] as List).cast<String>(),
       completedNovenas: (fields[3] as List?)?.cast<String>(),
       completedActivities: (fields[4] as List?)?.cast<String>(),
-      journal: fields[5] as String?,
+      gratitudeEntry: fields[5] as String?,
     );
   }
 
@@ -45,7 +45,7 @@ class DailyLogAdapter extends TypeAdapter<DailyLog> {
       ..writeByte(4)
       ..write(obj.completedActivities)
       ..writeByte(5)
-      ..write(obj.journal);
+      ..write(obj.gratitudeEntry);
   }
 
   @override

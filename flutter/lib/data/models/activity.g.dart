@@ -1,22 +1,22 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'extra_activity.dart';
+part of 'activity.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ExtraActivityAdapter extends TypeAdapter<ExtraActivity> {
+class ActivityAdapter extends TypeAdapter<Activity> {
   @override
   final typeId = 5;
 
   @override
-  ExtraActivity read(BinaryReader reader) {
+  Activity read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return ExtraActivity(
+    return Activity(
       id: fields[0] as String,
       name: fields[1] as String,
       icon: fields[2] as String,
@@ -25,7 +25,7 @@ class ExtraActivityAdapter extends TypeAdapter<ExtraActivity> {
   }
 
   @override
-  void write(BinaryWriter writer, ExtraActivity obj) {
+  void write(BinaryWriter writer, Activity obj) {
     writer
       ..writeByte(4)
       ..writeByte(0)
@@ -44,7 +44,7 @@ class ExtraActivityAdapter extends TypeAdapter<ExtraActivity> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ExtraActivityAdapter &&
+      other is ActivityAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

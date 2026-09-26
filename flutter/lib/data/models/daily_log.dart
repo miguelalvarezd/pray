@@ -20,8 +20,10 @@ class DailyLog {
   @HiveField(4)
   final List<String>? completedActivities;
 
+  /// The Day's Gratitude Entry. Persisted under the legacy `journal` key so
+  /// older backups import unchanged.
   @HiveField(5)
-  final String? journal;
+  final String? gratitudeEntry;
 
   const DailyLog({
     required this.date,
@@ -29,7 +31,7 @@ class DailyLog {
     this.completedIntentions = const [],
     this.completedNovenas,
     this.completedActivities,
-    this.journal,
+    this.gratitudeEntry,
   });
 
   DailyLog copyWith({
@@ -38,7 +40,7 @@ class DailyLog {
     List<String>? completedIntentions,
     List<String>? completedNovenas,
     List<String>? completedActivities,
-    String? journal,
+    String? gratitudeEntry,
   }) =>
       DailyLog(
         date: date ?? this.date,
@@ -46,7 +48,7 @@ class DailyLog {
         completedIntentions: completedIntentions ?? this.completedIntentions,
         completedNovenas: completedNovenas ?? this.completedNovenas,
         completedActivities: completedActivities ?? this.completedActivities,
-        journal: journal ?? this.journal,
+        gratitudeEntry: gratitudeEntry ?? this.gratitudeEntry,
       );
 
   Map<String, dynamic> toJson() => {
@@ -55,7 +57,7 @@ class DailyLog {
         'completedIntentions': completedIntentions,
         if (completedNovenas != null) 'completedNovenas': completedNovenas,
         if (completedActivities != null) 'completedActivities': completedActivities,
-        if (journal != null) 'journal': journal,
+        if (gratitudeEntry != null) 'journal': gratitudeEntry,
       };
 
   static DailyLog fromJson(Map<String, dynamic> j) => DailyLog(
@@ -65,7 +67,7 @@ class DailyLog {
         completedNovenas: j['completedNovenas'] == null ? null : _stringList(j['completedNovenas']),
         completedActivities:
             j['completedActivities'] == null ? null : _stringList(j['completedActivities']),
-        journal: j['journal'] as String?,
+        gratitudeEntry: j['journal'] as String?,
       );
 
   static List<String> _stringList(dynamic raw) {

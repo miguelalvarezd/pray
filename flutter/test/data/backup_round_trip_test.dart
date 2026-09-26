@@ -57,7 +57,7 @@ void main() {
           completedPrayers: ['morning_prayer', 'rosary'],
           completedIntentions: ['i1'],
           completedNovenas: ['n1'],
-          journal: 'Felt peace today.',
+          gratitudeEntry: 'Felt peace today.',
         ),
       );
       await boxes.settings.put(SettingsKeys.dateOverride, '2026-04-30');
@@ -89,7 +89,7 @@ void main() {
       expect(boxes.logs.length, 1);
       final log = boxes.logs.get('2026-04-30')!;
       expect(log.completedPrayers, ['morning_prayer', 'rosary']);
-      expect(log.journal, 'Felt peace today.');
+      expect(log.gratitudeEntry, 'Felt peace today.');
 
       expect(boxes.settings.get(SettingsKeys.dateOverride), '2026-04-30');
 

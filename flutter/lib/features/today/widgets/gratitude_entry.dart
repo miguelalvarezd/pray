@@ -9,14 +9,14 @@ import '../../../core/time/logical_day.dart';
 import '../../../data/models/daily_log.dart';
 import '../../../data/repositories/logs_repo.dart';
 
-class GratitudeJournal extends ConsumerStatefulWidget {
-  const GratitudeJournal({super.key});
+class GratitudeEntry extends ConsumerStatefulWidget {
+  const GratitudeEntry({super.key});
 
   @override
-  ConsumerState<GratitudeJournal> createState() => _GratitudeJournalState();
+  ConsumerState<GratitudeEntry> createState() => _GratitudeEntryState();
 }
 
-class _GratitudeJournalState extends ConsumerState<GratitudeJournal> {
+class _GratitudeEntryState extends ConsumerState<GratitudeEntry> {
   late final TextEditingController _controller;
   Timer? _debounce;
   String? _seededFor;
@@ -49,7 +49,7 @@ class _GratitudeJournalState extends ConsumerState<GratitudeJournal> {
     _debounce = Timer(const Duration(milliseconds: 600), () {
       final notifier = ref.read(logsProvider.notifier);
       final current = notifier.forDate(dateStr);
-      notifier.save(current.copyWith(journal: value.isEmpty ? null : value));
+      notifier.save(current.copyWith(gratitudeEntry: value.isEmpty ? null : value));
     });
   }
 
@@ -59,13 +59,13 @@ class _GratitudeJournalState extends ConsumerState<GratitudeJournal> {
     final date = ref.watch(currentDateProvider);
     final dateStr = formatLogDate(date);
     final log = ref.watch(logsProvider)[dateStr] ?? DailyLog(date: dateStr);
-    _seedIfNeeded(dateStr, log.journal ?? '');
+    _seedIfNeeded(dateStr, log.gratitudeEntry ?? '');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Gratitude Journal',
+          'Gratitude',
           style: GoogleFonts.newsreader(
             fontSize: 22,
             fontWeight: FontWeight.w500,

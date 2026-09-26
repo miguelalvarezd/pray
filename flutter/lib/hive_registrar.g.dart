@@ -3,18 +3,18 @@
 // Check in to version control
 
 import 'package:hive_ce/hive_ce.dart';
+import 'package:pray/data/models/activity.dart';
 import 'package:pray/data/models/activity_category.dart';
 import 'package:pray/data/models/daily_log.dart';
-import 'package:pray/data/models/extra_activity.dart';
 import 'package:pray/data/models/intention.dart';
 import 'package:pray/data/models/novena.dart';
 import 'package:pray/data/models/priority.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
+    registerAdapter(ActivityAdapter());
     registerAdapter(ActivityCategoryAdapter());
     registerAdapter(DailyLogAdapter());
-    registerAdapter(ExtraActivityAdapter());
     registerAdapter(IntentionAdapter());
     registerAdapter(NovenaAdapter());
     registerAdapter(PriorityAdapter());
@@ -23,9 +23,9 @@ extension HiveRegistrar on HiveInterface {
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
+    registerAdapter(ActivityAdapter());
     registerAdapter(ActivityCategoryAdapter());
     registerAdapter(DailyLogAdapter());
-    registerAdapter(ExtraActivityAdapter());
     registerAdapter(IntentionAdapter());
     registerAdapter(NovenaAdapter());
     registerAdapter(PriorityAdapter());

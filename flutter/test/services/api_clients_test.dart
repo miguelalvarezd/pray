@@ -86,7 +86,7 @@ void main() {
   });
 
   group('LectioClient', () {
-    test('caches the devotion and skips network within the TTL window', () async {
+    test('caches the daily lectio and skips network within the TTL window', () async {
       var hits = 0;
       final mock = MockClient((_) async {
         hits++;
@@ -107,12 +107,12 @@ void main() {
       final client = LectioClient(boxes.lectioCache, client: mock);
       final fetchedAt = DateTime.utc(2026, 5, 1, 8);
 
-      final d = await client.devotionFor(DateTime(2026, 5, 1), now: fetchedAt);
+      final d = await client.dailyLectioFor(DateTime(2026, 5, 1), now: fetchedAt);
       expect(d?.gospelRef, 'Jn 14:1-6');
       expect(hits, 1);
 
       // Second call within TTL should serve from cache.
-      final d2 = await client.devotionFor(
+      final d2 = await client.dailyLectioFor(
         DateTime(2026, 5, 1),
         now: fetchedAt.add(const Duration(days: 5)),
       );
@@ -140,7 +140,7 @@ void main() {
           'data': {'gospelRef': 'stale'},
         }),
       );
-      final d = await client.devotionFor(
+      final d = await client.dailyLectioFor(
         DateTime(2026, 5, 1),
         now: DateTime.utc(2026, 5, 1, 8),
       );
@@ -151,7 +151,7 @@ void main() {
     test('returns null on transport error and leaves cache untouched', () async {
       final mock = MockClient((_) async => throw StateError('offline'));
       final client = LectioClient(boxes.lectioCache, client: mock);
-      expect(await client.devotionFor(DateTime(2026, 5, 1)), isNull);
+      expect(await client.dailyLectioFor(DateTime(2026, 5, 1)), isNull);
       expect(boxes.lectioCache.length, 0);
     });
   });

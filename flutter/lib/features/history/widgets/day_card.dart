@@ -34,7 +34,7 @@ class DayCard extends ConsumerWidget {
     final completed = log?.completedPrayers.length ?? 0;
     final total = kDefaultPrayers.length;
     final pct = total == 0 ? 0 : ((completed / total) * 100).round();
-    final hasJournal = (log?.journal?.isNotEmpty ?? false);
+    final hasGratitudeEntry = (log?.gratitudeEntry?.isNotEmpty ?? false);
     final litcalClient = ref.watch(litCalClientProvider);
     final liturgicalColor = litcalClient.colorSyncFor(formatLogDate(day));
 
@@ -57,7 +57,7 @@ class DayCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           InkWell(
-            onTap: hasJournal ? onToggleExpand : null,
+            onTap: hasGratitudeEntry ? onToggleExpand : null,
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -90,7 +90,7 @@ class DayCard extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      if (hasJournal) ...[
+                      if (hasGratitudeEntry) ...[
                         AnimatedRotation(
                           turns: expanded ? 0.5 : 0,
                           duration: const Duration(milliseconds: 180),
@@ -181,7 +181,7 @@ class DayCard extends ConsumerWidget {
           AnimatedSize(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
-            child: expanded && hasJournal
+            child: expanded && hasGratitudeEntry
                 ? Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -193,7 +193,7 @@ class DayCard extends ConsumerWidget {
                     ),
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                     child: Text(
-                      log!.journal!,
+                      log!.gratitudeEntry!,
                       style: TextStyle(
                         fontSize: 14,
                         height: 1.5,
@@ -276,7 +276,7 @@ class _ActivityChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activity = kDefaultExtraActivities.where((a) => a.id == id).firstOrNull;
+    final activity = kDefaultActivities.where((a) => a.id == id).firstOrNull;
     if (activity == null) return const SizedBox.shrink();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

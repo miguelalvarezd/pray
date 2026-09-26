@@ -4,7 +4,7 @@
 library;
 
 import '../data/models/activity_category.dart';
-import '../data/models/extra_activity.dart';
+import '../data/models/activity.dart';
 
 class PrayerDefault {
   /// Stable id used in `DailyLog.completedPrayers`.
@@ -57,25 +57,25 @@ const List<PrayerDefault> kDefaultPrayers = [
   ),
 ];
 
-const List<ExtraActivity> kDefaultExtraActivities = [
+const List<Activity> kDefaultActivities = [
   // Sacramental
-  ExtraActivity(id: 'confession', name: 'Confession', icon: 'MessageSquareHeart', category: ActivityCategory.sacramental),
-  ExtraActivity(id: 'adoration', name: 'Adoration', icon: 'Sun', category: ActivityCategory.sacramental),
+  Activity(id: 'confession', name: 'Confession', icon: 'MessageSquareHeart', category: ActivityCategory.sacramental),
+  Activity(id: 'adoration', name: 'Adoration', icon: 'Sun', category: ActivityCategory.sacramental),
   // Devotional
-  ExtraActivity(id: 'via_crucis', name: 'Via Crucis', icon: 'Cross', category: ActivityCategory.devotional),
-  ExtraActivity(id: 'holy_hour', name: 'Holy Hour', icon: 'Clock', category: ActivityCategory.devotional),
-  ExtraActivity(id: 'lectio_divina', name: 'Lectio Divina', icon: 'BookMarked', category: ActivityCategory.devotional),
-  ExtraActivity(id: 'divine_mercy', name: 'Divine Mercy Chaplet', icon: 'Droplets', category: ActivityCategory.devotional),
-  ExtraActivity(id: 'angelus', name: 'Angelus / Regina Caeli', icon: 'Bell', category: ActivityCategory.devotional),
-  ExtraActivity(id: 'litany', name: 'Litany', icon: 'Scroll', category: ActivityCategory.devotional),
+  Activity(id: 'via_crucis', name: 'Via Crucis', icon: 'Cross', category: ActivityCategory.devotional),
+  Activity(id: 'holy_hour', name: 'Holy Hour', icon: 'Clock', category: ActivityCategory.devotional),
+  Activity(id: 'lectio_divina', name: 'Lectio Divina', icon: 'BookMarked', category: ActivityCategory.devotional),
+  Activity(id: 'divine_mercy', name: 'Divine Mercy Chaplet', icon: 'Droplets', category: ActivityCategory.devotional),
+  Activity(id: 'angelus', name: 'Angelus / Regina Caeli', icon: 'Bell', category: ActivityCategory.devotional),
+  Activity(id: 'litany', name: 'Litany', icon: 'Scroll', category: ActivityCategory.devotional),
   // Service
-  ExtraActivity(id: 'volunteering', name: 'Volunteering', icon: 'HandHeart', category: ActivityCategory.service),
-  ExtraActivity(id: 'almsgiving', name: 'Almsgiving / Charity', icon: 'HandCoins', category: ActivityCategory.service),
-  ExtraActivity(id: 'visiting_sick', name: 'Visiting the Sick', icon: 'HeartHandshake', category: ActivityCategory.service),
+  Activity(id: 'volunteering', name: 'Volunteering', icon: 'HandHeart', category: ActivityCategory.service),
+  Activity(id: 'almsgiving', name: 'Almsgiving / Charity', icon: 'HandCoins', category: ActivityCategory.service),
+  Activity(id: 'visiting_sick', name: 'Visiting the Sick', icon: 'HeartHandshake', category: ActivityCategory.service),
   // Spiritual
-  ExtraActivity(id: 'spiritual_reading', name: 'Spiritual Reading', icon: 'BookText', category: ActivityCategory.spiritual),
-  ExtraActivity(id: 'fasting', name: 'Fasting / Abstinence', icon: 'UtensilsCrossed', category: ActivityCategory.spiritual),
-  ExtraActivity(id: 'retreat', name: 'Retreat', icon: 'MountainSnow', category: ActivityCategory.spiritual),
-  ExtraActivity(id: 'pilgrimage', name: 'Pilgrimage', icon: 'Compass', category: ActivityCategory.spiritual),
-  ExtraActivity(id: 'examination', name: 'Examination of Conscience', icon: 'Brain', category: ActivityCategory.spiritual),
+  Activity(id: 'spiritual_reading', name: 'Spiritual Reading', icon: 'BookText', category: ActivityCategory.spiritual),
+  Activity(id: 'fasting', name: 'Fasting / Abstinence', icon: 'UtensilsCrossed', category: ActivityCategory.spiritual),
+  Activity(id: 'retreat', name: 'Retreat', icon: 'MountainSnow', category: ActivityCategory.spiritual),
+  Activity(id: 'pilgrimage', name: 'Pilgrimage', icon: 'Compass', category: ActivityCategory.spiritual),
+  Activity(id: 'examination', name: 'Examination of Conscience', icon: 'Brain', category: ActivityCategory.spiritual),
 ];

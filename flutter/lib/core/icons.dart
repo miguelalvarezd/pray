@@ -15,7 +15,7 @@ const _byName = <String, IconData>{
   'Crown': LucideIcons.crown,
   'MoonStar': LucideIcons.moonStar,
   'Book': LucideIcons.book,
-  // Extra activities (DEFAULT_EXTRA_ACTIVITIES in src/types.ts)
+  // Activities (DEFAULT_EXTRA_ACTIVITIES in src/types.ts)
   'MessageSquareHeart': LucideIcons.messageSquareHeart,
   'Sun': LucideIcons.sun,
   'Cross': LucideIcons.cross,

@@ -14,8 +14,8 @@ import '../../domain/defaults.dart';
 import 'widgets/active_novenas.dart';
 import 'widgets/daily_prayer_list.dart';
 import 'widgets/daily_reflection.dart';
-import 'widgets/gratitude_journal.dart';
-import 'widgets/other_prayers.dart';
+import 'widgets/gratitude_entry.dart';
+import 'widgets/today_activities.dart';
 import 'widgets/streak_bar.dart';
 import 'widgets/today_intentions.dart';
 
@@ -106,9 +106,9 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             const SizedBox(height: 28),
             const TodayIntentionsList(),
             const SizedBox(height: 28),
-            const OtherPrayers(),
+            const TodayActivities(),
             const SizedBox(height: 28),
-            const GratitudeJournal(),
+            const GratitudeEntry(),
             const SizedBox(height: 28),
             DailyReflection(date: date),
           ],

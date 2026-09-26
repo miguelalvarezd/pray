@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../../data/providers.dart';
 
-class Devotion {
+class DailyLectio {
   final String? date;
   final String? firstReadingRef;
   final String? secondReadingRef;
@@ -19,7 +19,7 @@ class Devotion {
   final String? liturgicalColor;
   final List<String> tags;
 
-  const Devotion({
+  const DailyLectio({
     this.date,
     this.firstReadingRef,
     this.secondReadingRef,
@@ -33,7 +33,7 @@ class Devotion {
     this.tags = const [],
   });
 
-  static Devotion fromJson(Map<String, dynamic> j) => Devotion(
+  static DailyLectio fromJson(Map<String, dynamic> j) => DailyLectio(
         date: j['date'] as String?,
         firstReadingRef: j['firstReadingRef'] as String?,
         secondReadingRef: j['secondReadingRef'] as String?,
@@ -63,7 +63,7 @@ class Devotion {
 }
 
 /// Read-only client for `https://dailylectio.org/devotions.json`. Caches the
-/// (single) most recent devotion keyed by the requested local date with a
+/// (single) most recent entry keyed by the requested local date with a
 /// 30-day TTL — older entries are evicted on read.
 class LectioClient {
   static const Duration ttl = Duration(days: 30);
@@ -74,7 +74,7 @@ class LectioClient {
   LectioClient(this.cache, {http.Client? client})
       : _http = client ?? http.Client();
 
-  Future<Devotion?> devotionFor(DateTime date, {DateTime? now}) async {
+  Future<DailyLectio?> dailyLectioFor(DateTime date, {DateTime? now}) async {
     final dateStr = _fmt(date);
 
     final cached = cache.get(dateStr);
@@ -84,7 +84,7 @@ class LectioClient {
         final cachedAt = DateTime.parse(envelope['cachedAt'] as String);
         if ((now ?? DateTime.now()).difference(cachedAt) < ttl) {
           final data = envelope['data'] as Map<String, dynamic>;
-          return Devotion.fromJson(data);
+          return DailyLectio.fromJson(data);
         }
         // Stale — fall through to re-fetch.
       } catch (_) {
@@ -106,7 +106,7 @@ class LectioClient {
           'data': first,
         }),
       );
-      return Devotion.fromJson(first);
+      return DailyLectio.fromJson(first);
     } catch (_) {
       return null;
     }
@@ -124,8 +124,8 @@ final lectioClientProvider = Provider<LectioClient>((ref) {
   return LectioClient(ref.watch(lectioCacheBoxProvider));
 });
 
-final dailyDevotionProvider =
-    FutureProvider.family<Devotion?, DateTime>((ref, date) async {
+final dailyLectioProvider =
+    FutureProvider.family<DailyLectio?, DateTime>((ref, date) async {
   final client = ref.watch(lectioClientProvider);
-  return client.devotionFor(date);
+  return client.dailyLectioFor(date);
 });

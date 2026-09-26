@@ -209,7 +209,7 @@ class _HeatmapCalendarState extends ConsumerState<HeatmapCalendar> {
       case HeatmapFilter.activities:
         if (_activitySub != null) {
           final cat = _activitySub!;
-          final ids = kDefaultExtraActivities
+          final ids = kDefaultActivities
               .where((a) => a.category == cat)
               .map((a) => a.id)
               .toSet();
