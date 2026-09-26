@@ -43,7 +43,7 @@ void main() {
         const Novena(
           id: 'n1',
           title: 'St. Jude',
-          intention: 'For my brother',
+          intentionId: 'i1',
           startDate: '2026-04-25',
           createdAt: '2026-04-25T08:00:00.000Z',
           templateId: 'st-jude',
@@ -84,6 +84,7 @@ void main() {
 
       expect(boxes.novenas.length, 1);
       expect(boxes.novenas.get('n1')!.title, 'St. Jude');
+      expect(boxes.novenas.get('n1')!.intentionId, 'i1');
 
       expect(boxes.logs.length, 1);
       final log = boxes.logs.get('2026-04-30')!;

@@ -1,6 +1,7 @@
 import '../data/models/daily_log.dart';
 import '../data/models/intention.dart';
 import '../data/models/intention_status.dart';
+import '../data/models/novena.dart';
 import '../data/models/priority.dart';
 
 /// Urgency score used to sort intentions on the Intentions screen and to
@@ -40,13 +41,25 @@ List<Intention> sortIntentions(Iterable<Intention> intentions, DateTime now) {
   return list;
 }
 
-/// `intentionId → number of distinct days marked as prayed-for`. Computed
-/// once per logs map to avoid re-walking on every card render. Mirrors
-/// `buildIntentionCountMap` in `src/lib/intentions.ts`.
-Map<String, int> buildIntentionCountMap(Map<String, DailyLog> logs) {
+/// `intentionId → number of distinct Days it was prayed for`. A Day counts
+/// if the Intention was ticked or a Novena offered for it was prayed.
+/// Computed once per logs map to avoid re-walking on every card render.
+Map<String, int> buildIntentionCountMap(
+  Map<String, DailyLog> logs, {
+  Iterable<Novena> novenas = const [],
+}) {
+  final intentionOfNovena = {
+    for (final n in novenas)
+      if (n.intentionId != null) n.id: n.intentionId!,
+  };
   final out = <String, int>{};
   for (final log in logs.values) {
-    for (final id in log.completedIntentions) {
+    final prayedFor = {
+      ...log.completedIntentions,
+      for (final id in log.completedNovenas ?? const <String>[])
+        ?intentionOfNovena[id],
+    };
+    for (final id in prayedFor) {
       out[id] = (out[id] ?? 0) + 1;
     }
   }

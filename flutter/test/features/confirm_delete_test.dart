@@ -15,7 +15,6 @@ void main() {
         const Novena(
           id: 'n1',
           title: 'St. Jude',
-          intention: 'For my brother',
           startDate: '2026-05-01',
           createdAt: '2026-05-01T08:00:00.000Z',
         ),

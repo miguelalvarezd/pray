@@ -10,11 +10,15 @@ class NovenaCard extends StatelessWidget {
   const NovenaCard({
     super.key,
     required this.novena,
+    required this.intentionTitle,
     required this.status,
     required this.onDelete,
   });
 
   final Novena novena;
+
+  /// Current title of the Intention the Novena is offered for, if any.
+  final String? intentionTitle;
   final NovenaStatus status;
   final VoidCallback onDelete;
 
@@ -71,15 +75,17 @@ class NovenaCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    novena.intention,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: scheme.onSurfaceVariant,
-                      height: 1.35,
+                  if (intentionTitle != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      intentionTitle!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: scheme.onSurfaceVariant,
+                        height: 1.35,
+                      ),
                     ),
-                  ),
+                  ],
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.symmetric(

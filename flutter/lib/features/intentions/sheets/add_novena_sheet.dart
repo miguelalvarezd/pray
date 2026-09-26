@@ -5,13 +5,18 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/time/current_date_provider.dart';
+import '../../../data/models/intention_status.dart';
 import '../../../data/models/novena.dart';
+import '../../../data/repositories/intentions_repo.dart';
 import '../../../data/repositories/novenas_repo.dart';
 import '../../../domain/novena_library.dart';
 
 const _uuid = Uuid();
 
 enum _Source { library, custom }
+
+/// Dropdown value for "offer this Novena for a new petition".
+const _newPetition = '__new__';
 
 Future<void> showAddNovenaSheet(BuildContext context) {
   return showModalBottomSheet<void>(
@@ -35,7 +40,11 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
   _Source _source = _Source.library;
   String? _templateId;
   final _saint = TextEditingController();
-  final _intention = TextEditingController();
+  final _petition = TextEditingController();
+
+  /// What the Novena is offered for: `null` for no Intention, [_newPetition]
+  /// for a new one typed below, or the id of an active Intention.
+  String? _offeredFor;
   DateTime? _startDate;
   GoRouter? _router;
 
@@ -62,7 +71,7 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
   void dispose() {
     _router?.routerDelegate.removeListener(_popOnNavigation);
     _saint.dispose();
-    _intention.dispose();
+    _petition.dispose();
     super.dispose();
   }
 
@@ -77,9 +86,22 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
     if (picked != null) setState(() => _startDate = picked);
   }
 
-  bool get _canSubmit => _source == _Source.library
-      ? _templateId != null
-      : _saint.text.trim().isNotEmpty && _intention.text.trim().isNotEmpty;
+  /// The petition text for a new Intention, falling back to the template's
+  /// suggested intention when left empty.
+  String get _petitionText {
+    final typed = _petition.text.trim();
+    if (typed.isNotEmpty) return typed;
+    final tpl = _templateId == null ? null : findTemplate(_templateId!);
+    return tpl?.suggestedIntention ?? '';
+  }
+
+  bool get _canSubmit {
+    final hasSource = _source == _Source.library
+        ? _templateId != null
+        : _saint.text.trim().isNotEmpty;
+    final hasPetition = _offeredFor != _newPetition || _petitionText.isNotEmpty;
+    return hasSource && hasPetition;
+  }
 
   Future<void> _submit() async {
     final now = ref.read(currentDateProvider);
@@ -87,16 +109,16 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
     final startStr = DateFormat('yyyy-MM-dd').format(start);
     final createdAt = now.toUtc().toIso8601String();
 
+    final existingIntentionId =
+        _offeredFor == _newPetition ? null : _offeredFor;
     final Novena novena;
     if (_source == _Source.library) {
       final tpl = findTemplate(_templateId!);
       if (tpl == null) return;
-      final intentionText =
-          _intention.text.trim().isEmpty ? tpl.suggestedIntention : _intention.text.trim();
       novena = Novena(
         id: _uuid.v4(),
         title: tpl.title,
-        intention: intentionText,
+        intentionId: existingIntentionId,
         startDate: startStr,
         createdAt: createdAt,
         prayer: tpl.prayer,
@@ -106,13 +128,16 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
       novena = Novena(
         id: _uuid.v4(),
         title: _saint.text.trim(),
-        intention: _intention.text.trim(),
+        intentionId: existingIntentionId,
         startDate: startStr,
         createdAt: createdAt,
       );
     }
 
-    await ref.read(novenasProvider.notifier).add(novena);
+    await ref.read(novenasProvider.notifier).start(
+          novena,
+          newPetition: _offeredFor == _newPetition ? _petitionText : null,
+        );
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -121,9 +146,13 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
     final scheme = Theme.of(context).colorScheme;
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final selectedTemplate = _templateId == null ? null : findTemplate(_templateId!);
-    final intentionHint = selectedTemplate != null
-        ? 'Your intention (default: ${selectedTemplate.suggestedIntention})'
-        : 'Your intention for this novena';
+    final petitionHint = selectedTemplate != null
+        ? 'Your petition (default: ${selectedTemplate.suggestedIntention})'
+        : 'What are you asking for?';
+    final activeIntentions = ref
+        .watch(intentionsProvider)
+        .where((i) => i.status == IntentionStatus.active)
+        .toList();
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 8, 20, 20 + viewInsets),
@@ -196,13 +225,35 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
                 ),
               ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _intention,
-              onChanged: (_) => setState(() {}),
-              minLines: 2,
-              maxLines: 4,
-              decoration: InputDecoration(hintText: intentionHint),
+            DropdownButtonFormField<String?>(
+              initialValue: _offeredFor,
+              isExpanded: true,
+              decoration: const InputDecoration(labelText: 'Offered for'),
+              items: [
+                const DropdownMenuItem(value: null, child: Text('No intention')),
+                for (final i in activeIntentions)
+                  DropdownMenuItem(
+                    value: i.id,
+                    child: Text(i.title, overflow: TextOverflow.ellipsis),
+                  ),
+                const DropdownMenuItem(
+                  value: _newPetition,
+                  child: Text('New petition…'),
+                ),
+              ],
+              onChanged: (v) => setState(() => _offeredFor = v),
             ),
+            if (_offeredFor == _newPetition) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: _petition,
+                onChanged: (_) => setState(() {}),
+                autofocus: true,
+                minLines: 1,
+                maxLines: 3,
+                decoration: InputDecoration(hintText: petitionHint),
+              ),
+            ],
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: _pickStartDate,

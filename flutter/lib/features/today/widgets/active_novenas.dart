@@ -6,6 +6,7 @@ import '../../../core/icons.dart';
 import '../../../core/time/current_date_provider.dart';
 import '../../../core/time/logical_day.dart';
 import '../../../data/models/novena.dart';
+import '../../../data/repositories/intentions_repo.dart';
 import '../../../data/repositories/logs_repo.dart';
 import '../../../data/repositories/novenas_repo.dart';
 import '../../../domain/novena_logic.dart';
@@ -28,6 +29,9 @@ class _ActiveNovenasState extends ConsumerState<ActiveNovenas> {
     final logs = ref.watch(logsProvider);
     final completedNovenas = logs[dateStr]?.completedNovenas ?? const <String>[];
     final novenas = ref.watch(novenasProvider);
+    final intentionTitles = {
+      for (final i in ref.watch(intentionsProvider)) i.id: i.title,
+    };
 
     final active = [
       for (final n in novenas)
@@ -52,6 +56,7 @@ class _ActiveNovenasState extends ConsumerState<ActiveNovenas> {
         for (var i = 0; i < active.length; i++) ...[
           _NovenaCard(
             novena: active[i].novena,
+            intentionTitle: intentionTitles[active[i].novena.intentionId],
             dayOfNovena: active[i].day,
             done: completedNovenas.contains(active[i].novena.id),
             expanded: _expanded.contains(active[i].novena.id),
@@ -76,6 +81,7 @@ class _ActiveNovenasState extends ConsumerState<ActiveNovenas> {
 class _NovenaCard extends StatelessWidget {
   const _NovenaCard({
     required this.novena,
+    required this.intentionTitle,
     required this.dayOfNovena,
     required this.done,
     required this.expanded,
@@ -84,6 +90,7 @@ class _NovenaCard extends StatelessWidget {
   });
 
   final Novena novena;
+  final String? intentionTitle;
   final int dayOfNovena;
   final bool done;
   final bool expanded;
@@ -147,7 +154,10 @@ class _NovenaCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'DAY $dayOfNovena OF 9 · ${novena.intention}'.toUpperCase(),
+                            [
+                              'DAY $dayOfNovena OF 9',
+                              ?intentionTitle,
+                            ].join(' · ').toUpperCase(),
                             style: GoogleFonts.manrope(
                               fontSize: 10,
                               letterSpacing: 1.4,

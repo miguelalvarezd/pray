@@ -31,7 +31,7 @@ void main() {
     const n = Novena(
       id: 'n',
       title: 'St. Jude',
-      intention: 'For Z',
+      intentionId: 'z',
       startDate: '2026-04-25',
       createdAt: '2026-04-25T00:00:00.000Z',
       prayer: 'May the Sacred Heart…',
@@ -40,6 +40,7 @@ void main() {
     final back = Novena.fromJson(n.toJson());
     expect(back.title, n.title);
     expect(back.templateId, n.templateId);
+    expect(back.intentionId, 'z');
   });
 
   test('DailyLog handles optional fields', () {

@@ -1,3 +1,4 @@
+import '../../core/time/logical_day.dart';
 import '../boxes.dart';
 import '../models/daily_log.dart';
 import '../models/intention.dart';
@@ -10,7 +11,19 @@ import 'backup_envelope.dart';
 class BackupService {
   final AppBoxes boxes;
   final List<MigrationStep> steps;
-  const BackupService(this.boxes, {this.steps = kMigrationSteps});
+  final DateTime Function()? _today;
+
+  /// [today] overrides the current Day given to migration steps (tests).
+  BackupService(
+    this.boxes, {
+    List<MigrationStep>? steps,
+    DateTime Function()? today,
+  })  : steps = steps ?? kMigrationSteps,
+        _today = today;
+
+  DateTime get _currentDay =>
+      _today?.call() ??
+      logicalToday(override: boxes.settings.get(SettingsKeys.dateOverride) as String?);
 
   int get _currentVersion => steps.length;
 
@@ -112,7 +125,7 @@ class BackupService {
   Map<String, dynamic> _runSteps(Map<String, dynamic> data, int fromVersion) {
     var out = data;
     for (var v = fromVersion; v < _currentVersion; v++) {
-      out = steps[v](out);
+      out = steps[v](out, _currentDay);
     }
     return out;
   }

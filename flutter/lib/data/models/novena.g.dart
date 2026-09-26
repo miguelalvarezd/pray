@@ -19,24 +19,25 @@ class NovenaAdapter extends TypeAdapter<Novena> {
     return Novena(
       id: fields[0] as String,
       title: fields[1] as String,
-      intention: fields[2] as String,
+      intentionId: fields[7] as String?,
       startDate: fields[3] as String,
       createdAt: fields[4] as String,
       prayer: fields[5] as String?,
       templateId: fields[6] as String?,
+      legacyIntentionText: fields[2] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Novena obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.intention)
+      ..write(obj.legacyIntentionText)
       ..writeByte(3)
       ..write(obj.startDate)
       ..writeByte(4)
@@ -44,7 +45,9 @@ class NovenaAdapter extends TypeAdapter<Novena> {
       ..writeByte(5)
       ..write(obj.prayer)
       ..writeByte(6)
-      ..write(obj.templateId);
+      ..write(obj.templateId)
+      ..writeByte(7)
+      ..write(obj.intentionId);
   }
 
   @override

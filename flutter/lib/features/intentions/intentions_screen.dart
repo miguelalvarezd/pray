@@ -81,7 +81,8 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
     final intentions = ref.watch(intentionsProvider);
     final novenas = ref.watch(novenasProvider);
     final logs = ref.watch(logsProvider);
-    final prayedCounts = buildIntentionCountMap(logs);
+    final prayedCounts = buildIntentionCountMap(logs, novenas: novenas);
+    final intentionTitles = {for (final i in intentions) i.id: i.title};
 
     final activeIntentions = sortIntentions(
       intentions.where((i) => i.status == IntentionStatus.active),
@@ -171,6 +172,7 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
                   ..._buildNovenaList(
                     _subTab == 1 ? historicalNovenas : activeNovenas,
                     novenaStatuses,
+                    intentionTitles,
                   ),
                 ],
               ],
@@ -263,6 +265,7 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
   List<Widget> _buildNovenaList(
     List<Novena> novenas,
     Map<String, NovenaStatus> statuses,
+    Map<String, String> intentionTitles,
   ) {
     if (novenas.isEmpty) {
       return [
@@ -276,6 +279,7 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
       final n = novenas[i];
       widgets.add(NovenaCard(
         novena: n,
+        intentionTitle: intentionTitles[n.intentionId],
         status: statuses[n.id]!,
         onDelete: () => _confirmDeleteNovena(n),
       ));

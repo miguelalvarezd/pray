@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pray/data/models/daily_log.dart';
 import 'package:pray/data/models/intention.dart';
 import 'package:pray/data/models/intention_status.dart';
+import 'package:pray/data/models/novena.dart';
 import 'package:pray/data/models/priority.dart';
 import 'package:pray/domain/intentions_logic.dart';
 
@@ -83,5 +84,27 @@ void main() {
     expect(counts['y'], 1);
     expect(counts['z'], 1);
     expect(counts['nothing'], isNull);
+  });
+
+  test('a Day a Novena is prayed counts as praying for its Intention, once per Day', () {
+    const novena = Novena(
+      id: 'n1',
+      title: 'St. Jude',
+      intentionId: 'x',
+      startDate: '2026-04-29',
+      createdAt: '2026-04-29T08:00:00.000Z',
+    );
+    final logs = {
+      // Ticked and Novena prayed on the same Day: one Day.
+      '2026-04-29': const DailyLog(
+        date: '2026-04-29',
+        completedIntentions: ['x'],
+        completedNovenas: ['n1'],
+      ),
+      // Novena only.
+      '2026-04-30': const DailyLog(date: '2026-04-30', completedNovenas: ['n1']),
+    };
+    final counts = buildIntentionCountMap(logs, novenas: [novena]);
+    expect(counts['x'], 2);
   });
 }
