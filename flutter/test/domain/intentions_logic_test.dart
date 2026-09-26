@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pray/core/time/logical_day.dart';
 import 'package:pray/data/models/daily_log.dart';
 import 'package:pray/data/models/intention.dart';
 import 'package:pray/data/models/intention_status.dart';
@@ -106,5 +107,34 @@ void main() {
     };
     final counts = buildIntentionCountMap(logs, novenas: [novena]);
     expect(counts['x'], 2);
+  });
+
+  group('isTargetDatePassed', () {
+    test('an active Intention whose Target Date is before today\'s Day has passed', () {
+      expect(isTargetDatePassed(_i(targetDate: '2026-04-30'), now), isTrue);
+    });
+
+    test('Answered and Archived Intentions never prompt', () {
+      for (final status in [IntentionStatus.answered, IntentionStatus.archived]) {
+        expect(
+          isTargetDatePassed(_i(targetDate: '2026-04-30', status: status), now),
+          isFalse,
+        );
+      }
+    });
+
+    test('an Intention without a Target Date never prompts', () {
+      expect(isTargetDatePassed(_i(), now), isFalse);
+    });
+
+    test('a Target Date of today has not passed', () {
+      expect(isTargetDatePassed(_i(targetDate: '2026-05-01'), now), isFalse);
+    });
+
+    test('at 01:00 the Day boundary, not midnight, decides', () {
+      // 01:00 on May 1 still belongs to the Day of April 30.
+      final day = logicalToday(now: DateTime(2026, 5, 1, 1, 0));
+      expect(isTargetDatePassed(_i(targetDate: '2026-04-30'), day), isFalse);
+    });
   });
 }

@@ -35,6 +35,14 @@ double calculateUrgency(Intention i, DateTime now) {
   return score;
 }
 
+/// Whether [i] is still being prayed for but its Target Date is before
+/// [today] (a Day), so the user should be asked whether it was Answered.
+bool isTargetDatePassed(Intention i, DateTime today) {
+  final target = i.targetDate;
+  if (target == null || i.status != IntentionStatus.active) return false;
+  return _daysBetween(DateTime.parse(target), today) < 0;
+}
+
 List<Intention> sortIntentions(Iterable<Intention> intentions, DateTime now) {
   final list = intentions.toList();
   list.sort((a, b) => calculateUrgency(b, now).compareTo(calculateUrgency(a, now)));

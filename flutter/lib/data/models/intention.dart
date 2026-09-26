@@ -80,6 +80,20 @@ class Intention {
         answerNote: answerNote,
       );
 
+  /// This Intention with its Target Date set to [targetDate] (`null` clears
+  /// it).
+  Intention withTargetDate(String? targetDate) => Intention(
+        id: id,
+        title: title,
+        description: description,
+        createdAt: createdAt,
+        targetDate: targetDate,
+        priority: priority,
+        status: status,
+        answeredOn: answeredOn,
+        answerNote: answerNote,
+      );
+
   /// This Intention with [status], and the answer fields set exactly as
   /// given, so leaving the Answered state always clears them.
   Intention withStatus(

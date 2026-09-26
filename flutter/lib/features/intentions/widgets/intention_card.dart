@@ -12,6 +12,8 @@ class IntentionCard extends StatelessWidget {
     required this.intention,
     required this.urgency,
     required this.prayedCount,
+    required this.targetDatePassed,
+    required this.onKeepPraying,
     required this.onAnswer,
     required this.onArchive,
     required this.onRestore,
@@ -21,6 +23,10 @@ class IntentionCard extends StatelessWidget {
   final Intention intention;
   final double urgency;
   final int prayedCount;
+
+  /// Whether to ask "Was this answered?" because the Target Date has passed.
+  final bool targetDatePassed;
+  final VoidCallback onKeepPraying;
   final VoidCallback onAnswer;
   final VoidCallback onArchive;
   final VoidCallback onRestore;
@@ -125,6 +131,14 @@ class IntentionCard extends StatelessWidget {
                       ),
                   ],
                 ),
+                if (targetDatePassed) ...[
+                  const SizedBox(height: 12),
+                  _TargetDatePrompt(
+                    onAnswered: onAnswer,
+                    onArchive: onArchive,
+                    onKeepPraying: onKeepPraying,
+                  ),
+                ],
               ],
             ),
           ),
@@ -160,6 +174,48 @@ class IntentionCard extends StatelessWidget {
                 onPressed: onDelete,
                 icon: Icon(Icons.delete_outline,
                     size: 20, color: scheme.outline),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TargetDatePrompt extends StatelessWidget {
+  const _TargetDatePrompt({
+    required this.onAnswered,
+    required this.onArchive,
+    required this.onKeepPraying,
+  });
+  final VoidCallback onAnswered;
+  final VoidCallback onArchive;
+  final VoidCallback onKeepPraying;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 4),
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'The target date has passed. Was this answered?',
+            style: TextStyle(fontSize: 13, color: scheme.onSecondaryContainer),
+          ),
+          Wrap(
+            children: [
+              TextButton(onPressed: onAnswered, child: const Text('Answered')),
+              TextButton(onPressed: onArchive, child: const Text('Archive')),
+              TextButton(
+                onPressed: onKeepPraying,
+                child: const Text('Keep praying'),
               ),
             ],
           ),

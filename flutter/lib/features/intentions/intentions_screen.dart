@@ -6,6 +6,7 @@ import '../../core/icons.dart';
 import '../../core/nav/scroll_notifier.dart' show scrollTriggersProvider;
 import '../../core/widgets/expandable_fab.dart';
 import '../../core/time/current_date_provider.dart';
+import '../../core/time/logical_day.dart';
 import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/undo_snack_bar.dart';
 import '../../data/models/intention.dart';
@@ -23,6 +24,8 @@ import 'widgets/intention_card.dart';
 import 'widgets/novena_card.dart';
 
 enum _View { intentions, novenas }
+
+enum _KeepPrayingChoice { newDate, noDate }
 
 class IntentionsScreen extends ConsumerStatefulWidget {
   const IntentionsScreen({super.key});
@@ -212,6 +215,8 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
         intention: it,
         urgency: calculateUrgency(it, now),
         prayedCount: counts[it.id] ?? 0,
+        targetDatePassed: isTargetDatePassed(it, now),
+        onKeepPraying: () => _keepPraying(it),
         onAnswer: () => _answer(it),
         onArchive: () => _changeStatus(it, archive: true),
         onRestore: () => _changeStatus(it, archive: false),
@@ -238,6 +243,49 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
     final answered = await showAnswerIntentionSheet(context, intention);
     if (!answered || !mounted) return;
     _offerUndo('Marked answered', intention);
+  }
+
+  /// Keeps praying for [intention] after its Target Date, with a new Target
+  /// Date or none.
+  Future<void> _keepPraying(Intention intention) async {
+    final choice = await showDialog<_KeepPrayingChoice>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Keep praying'),
+        content: const Text('Set a new target date, or keep praying without one?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(_KeepPrayingChoice.noDate),
+            child: const Text('No target date'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(_KeepPrayingChoice.newDate),
+            child: const Text('New date'),
+          ),
+        ],
+      ),
+    );
+    if (choice == null || !mounted) return;
+
+    String? newTargetDate;
+    if (choice == _KeepPrayingChoice.newDate) {
+      final today = ref.read(currentDateProvider);
+      final picked = await showDatePicker(
+        context: context,
+        initialDate: today.add(const Duration(days: 7)),
+        firstDate: today,
+        lastDate: DateTime(today.year + 5),
+      );
+      if (picked == null) return;
+      newTargetDate = formatLogDate(picked);
+    }
+    await ref
+        .read(intentionsProvider.notifier)
+        .keepPraying(intention.id, newTargetDate: newTargetDate);
   }
 
   /// Archives or restores [intention].

@@ -38,6 +38,11 @@ class IntentionsNotifier extends Notifier<List<Intention>> {
   Future<void> restore(String id) =>
       _replace(id, (i) => i.withStatus(IntentionStatus.active));
 
+  /// Keeps praying for an Intention whose Target Date has passed: sets
+  /// [newTargetDate] (`YYYY-MM-DD`), or clears the Target Date if none.
+  Future<void> keepPraying(String id, {String? newTargetDate}) =>
+      _replace(id, (i) => i.withTargetDate(newTargetDate));
+
   Future<void> _replace(String id, Intention Function(Intention) change) async {
     final box = ref.read(intentionsBoxProvider);
     final current = box.get(id);

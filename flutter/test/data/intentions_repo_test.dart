@@ -88,4 +88,23 @@ void main() {
     expect(stored('i1').answeredOn, '2026-05-02');
     expect(stored('i1').answerNote, 'Surgery went well');
   });
+
+  group('keep praying after the Target Date', () {
+    Intention withTarget() => _mom.copyWith(targetDate: '2026-04-30');
+
+    test('clears the passed Target Date when no new one is given', () async {
+      await notifier().add(withTarget());
+      await notifier().keepPraying('i1');
+
+      expect(stored('i1').targetDate, isNull);
+      expect(stored('i1').status, IntentionStatus.active);
+    });
+
+    test('sets the new Target Date when one is given', () async {
+      await notifier().add(withTarget());
+      await notifier().keepPraying('i1', newTargetDate: '2026-06-01');
+
+      expect(stored('i1').targetDate, '2026-06-01');
+    });
+  });
 }
