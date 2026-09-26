@@ -6,6 +6,7 @@ import '../../core/icons.dart';
 import '../../core/nav/scroll_notifier.dart' show scrollTriggersProvider;
 import '../../core/widgets/expandable_fab.dart';
 import '../../core/time/current_date_provider.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/undo_snack_bar.dart';
 import '../../data/models/intention.dart';
 import '../../data/models/intention_status.dart';
@@ -203,6 +204,17 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
     return widgets;
   }
 
+  Future<void> _confirmDeleteNovena(Novena novena) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Delete this novena?',
+      message:
+          '"${novena.title}" and its record in your history will be removed. This can\'t be undone.',
+      confirmLabel: 'Delete',
+    );
+    if (confirmed) await ref.read(novenasProvider.notifier).delete(novena.id);
+  }
+
   /// Archives or restores [intention], with an Undo that puts back exactly
   /// what was there before.
   Future<void> _toggleArchive(Intention intention) async {
@@ -240,7 +252,7 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
       widgets.add(NovenaCard(
         novena: n,
         status: statuses[n.id]!,
-        onDelete: () => ref.read(novenasProvider.notifier).delete(n.id),
+        onDelete: () => _confirmDeleteNovena(n),
       ));
       if (i < novenas.length - 1) widgets.add(const SizedBox(height: 12));
     }

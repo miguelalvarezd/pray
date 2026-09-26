@@ -43,6 +43,21 @@ class LogsNotifier extends Notifier<Map<String, DailyLog>> {
     await save(current.copyWith(completedIntentions: list));
   }
 
+  /// Removes a deleted Novena from every Daily Log.
+  Future<void> forgetNovena(String novenaId) async {
+    final box = ref.read(logsBoxProvider);
+    for (final key in box.keys.toList()) {
+      final log = box.get(key)!;
+      final ids = log.completedNovenas;
+      if (ids == null || !ids.contains(novenaId)) continue;
+      await box.put(
+        key,
+        log.copyWith(completedNovenas: ids.where((id) => id != novenaId).toList()),
+      );
+    }
+    ref.invalidateSelf();
+  }
+
   Future<void> toggleNovena(String date, String novenaId) async {
     final current = forDate(date);
     final list = List<String>.from(current.completedNovenas ?? const []);

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:hive_ce_flutter/adapters.dart';
 
 import '../hive_registrar.g.dart';
@@ -62,21 +64,23 @@ Future<AppBoxes> openAppBoxes() async {
 }
 
 /// Test helper: open boxes against an explicit on-disk path. Use `Hive.init`
-/// (not `Hive.initFlutter`) before calling.
-Future<AppBoxes> openTestBoxes() async {
+/// (not `Hive.initFlutter`) before calling. With [inMemory], boxes live in
+/// memory only, so reads and writes complete without real IO (needed inside
+/// widget tests, which run on fake async).
+Future<AppBoxes> openTestBoxes({bool inMemory = false}) async {
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapters();
   }
-  return _openBoxes();
+  return _openBoxes(bytes: inMemory ? Uint8List(0) : null);
 }
 
-Future<AppBoxes> _openBoxes() async {
-  final intentions = await Hive.openBox<Intention>(BoxNames.intentions);
-  final novenas = await Hive.openBox<Novena>(BoxNames.novenas);
-  final logs = await Hive.openBox<DailyLog>(BoxNames.logs);
-  final settings = await Hive.openBox(BoxNames.settings);
-  final litcalCache = await Hive.openBox<String>(BoxNames.litcalCache);
-  final lectioCache = await Hive.openBox<String>(BoxNames.lectioCache);
+Future<AppBoxes> _openBoxes({Uint8List? bytes}) async {
+  final intentions = await Hive.openBox<Intention>(BoxNames.intentions, bytes: bytes);
+  final novenas = await Hive.openBox<Novena>(BoxNames.novenas, bytes: bytes);
+  final logs = await Hive.openBox<DailyLog>(BoxNames.logs, bytes: bytes);
+  final settings = await Hive.openBox(BoxNames.settings, bytes: bytes);
+  final litcalCache = await Hive.openBox<String>(BoxNames.litcalCache, bytes: bytes);
+  final lectioCache = await Hive.openBox<String>(BoxNames.lectioCache, bytes: bytes);
   return AppBoxes(
     intentions: intentions,
     novenas: novenas,

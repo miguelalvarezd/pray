@@ -12,21 +12,23 @@ import 'package:pray/data/providers.dart';
 /// Suitable for `test()` groups. Inside `testWidgets`, use
 /// [initTestHiveInWidgetTest] instead — Hive's `openBox` schedules microtasks
 /// that don't progress under fake-async.
-Future<(AppBoxes, Directory)> initTestHive() async {
+Future<(AppBoxes, Directory)> initTestHive({bool inMemory = false}) async {
   final tmp = await Directory.systemTemp.createTemp('pray_test_');
   Hive.init(tmp.path);
-  final boxes = await openTestBoxes();
+  final boxes = await openTestBoxes(inMemory: inMemory);
   return (boxes, tmp);
 }
 
 /// Widget-test variant that runs the Hive bootstrap on the real event loop.
+/// Boxes are in memory, so the UI's reads and writes complete under fake
+/// async without giving the real event loop a turn.
 Future<(AppBoxes, Directory)> initTestHiveInWidgetTest(
   WidgetTester tester,
 ) async {
   late AppBoxes boxes;
   late Directory tmp;
   await tester.runAsync(() async {
-    final result = await initTestHive();
+    final result = await initTestHive(inMemory: true);
     boxes = result.$1;
     tmp = result.$2;
   });

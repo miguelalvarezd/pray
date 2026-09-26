@@ -12,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/nav/scroll_notifier.dart' show scrollTriggersProvider;
 import '../../core/time/current_date_provider.dart';
 import '../../core/theme/theme_controller.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../data/backup/backup_envelope.dart';
 import '../../data/backup/backup_service.dart';
 import '../../data/boxes.dart';
@@ -85,6 +86,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         case ImportFail(:final error):
           _showFlash(error, isError: true);
         case ImportOk(:final data):
+          if (!mounted) return;
+          final confirmed = await showConfirmDialog(
+            context,
+            title: 'Replace your data?',
+            message:
+                'Importing this backup replaces your current intentions, novenas and history. This can\'t be undone.',
+            confirmLabel: 'Import',
+          );
+          if (!confirmed) return;
           await service.applyImport(data);
           // Force the data providers to re-read from boxes.
           ref.invalidate(intentionsProvider);
