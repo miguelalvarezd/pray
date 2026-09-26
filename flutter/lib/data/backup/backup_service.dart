@@ -4,15 +4,49 @@ import '../models/intention.dart';
 import '../models/novena.dart';
 import 'backup_envelope.dart';
 
-/// Round-trips the current Hive state with the React `BackupEnvelope` v1
-/// shape so users can export from one app and import in the other.
+/// Round-trips the Hive state through the versioned backup envelope, and
+/// upgrades data stored on the device. Both backup import and the on-device
+/// upgrade run through the same chain of [MigrationStep]s.
 class BackupService {
   final AppBoxes boxes;
-  const BackupService(this.boxes);
+  final List<MigrationStep> steps;
+  const BackupService(this.boxes, {this.steps = kMigrationSteps});
+
+  int get _currentVersion => steps.length;
+
+  /// Version of the data currently stored on the device, or `null` if it
+  /// has never been recorded (a fresh install, or data from before versioning).
+  int? get storedDataVersion =>
+      boxes.settings.get(SettingsKeys.dataVersion) as int?;
 
   /// Reads all four backup-eligible storage keys out of Hive and wraps them
   /// in the versioned envelope ready for `jsonEncode`.
   BackupEnvelope buildExport({DateTime? now}) {
+    return BackupEnvelope(
+      version: _currentVersion,
+      exportedAt: (now ?? DateTime.now().toUtc()).toIso8601String(),
+      data: _dumpStoredData(),
+    );
+  }
+
+  /// Brings data stored on the device up to the current schema version by
+  /// running it through the migration chain, as if it were imported. Call
+  /// once at startup, after the boxes are open.
+  Future<void> upgradeStoredData() async {
+    final stored = storedDataVersion ?? (_isEmpty ? _currentVersion : 1);
+    if (stored < _currentVersion) {
+      final migrated = _runSteps(_dumpStoredData(), stored);
+      await applyImport(migrated);
+    }
+    if (stored <= _currentVersion) {
+      await boxes.settings.put(SettingsKeys.dataVersion, _currentVersion);
+    }
+  }
+
+  bool get _isEmpty =>
+      boxes.intentions.isEmpty && boxes.novenas.isEmpty && boxes.logs.isEmpty;
+
+  Map<String, dynamic> _dumpStoredData() {
     final data = <String, dynamic>{};
 
     final intentions = boxes.intentions.values.toList();
@@ -38,12 +72,7 @@ class BackupService {
     if (dateOverride != null) {
       data['prayer-date-override'] = dateOverride;
     }
-
-    return BackupEnvelope(
-      version: kSchemaVersion,
-      exportedAt: (now ?? DateTime.now().toUtc()).toIso8601String(),
-      data: data,
-    );
+    return data;
   }
 
   /// Validates a parsed JSON blob and normalizes legacy (unversioned) exports
@@ -72,13 +101,20 @@ class BackupService {
   }
 
   ImportResult _migrate(Map<String, dynamic> data, int fromVersion) {
-    if (fromVersion > kSchemaVersion) {
+    if (fromVersion > _currentVersion) {
       return ImportFail(
-        'Backup is from a newer version (v$fromVersion) than this app supports (v$kSchemaVersion).',
+        'Backup is from a newer version (v$fromVersion) than this app supports (v$_currentVersion).',
       );
     }
-    // No transforms needed for v0 → v1; the unversioned shape is a subset of v1.
-    return ImportOk(data, kSchemaVersion);
+    return ImportOk(_runSteps(data, fromVersion), _currentVersion);
+  }
+
+  Map<String, dynamic> _runSteps(Map<String, dynamic> data, int fromVersion) {
+    var out = data;
+    for (var v = fromVersion; v < _currentVersion; v++) {
+      out = steps[v](out);
+    }
+    return out;
   }
 
   /// Writes a migrated backup payload into Hive. Only keys in [kStorageKeys]

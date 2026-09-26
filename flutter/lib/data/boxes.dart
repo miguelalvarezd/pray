@@ -26,6 +26,9 @@ class BoxNames {
 class SettingsKeys {
   static const theme = 'prayer-tracker-theme';
   static const dateOverride = 'prayer-date-override';
+
+  /// Schema version of the data stored on the device (see `BackupService`).
+  static const dataVersion = 'data-version';
   // Mass guide
   static const massLang = 'mass-lang';
   static const massSecondaryLang = 'mass-secondary-lang';

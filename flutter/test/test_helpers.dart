@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:pray/data/boxes.dart';
+import 'package:pray/data/providers.dart';
 
 /// Initializes Hive against a fresh temp directory and opens all app boxes.
 /// Returns both the boxes and the temp dir so tests can clean up after.
@@ -35,3 +37,9 @@ Future<void> tearDownTestHive(AppBoxes boxes, Directory tmp) async {
   await Hive.close();
   if (tmp.existsSync()) await tmp.delete(recursive: true);
 }
+
+/// A Riverpod container wired to [boxes], for testing notifier operations
+/// through their public API. Dispose it in the test's tear-down.
+ProviderContainer createTestContainer(AppBoxes boxes) => ProviderContainer(
+      overrides: [appBoxesProvider.overrideWithValue(boxes)],
+    );
