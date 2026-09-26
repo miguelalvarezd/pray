@@ -1,0 +1,3 @@
+# Flutter is the only client
+
+The app started as a React PWA (`src/`) and was then ported to Flutter (`flutter/`). We decided that Flutter is the single client going forward, covering mobile and a web build, and that the React PWA is retired, because keeping two implementations of the same domain logic in sync (urgency, streaks, the Mass and Rosary engines) is too costly for a solo project. Until Flutter web ships, React gets fixes only, and all new behavior goes into Flutter alone. Flutter web will then replace the PWA at the current Vercel URL. Existing data moves across through Export → Import, since the two apps cannot share browser storage.
