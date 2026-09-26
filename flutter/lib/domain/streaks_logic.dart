@@ -13,9 +13,11 @@ typedef LogPredicate = bool Function(DailyLog log);
 /// Strips the time component so DST transitions don't affect day-diff math.
 DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-/// Common predicate: day counts if any prayer or novena was completed.
-bool hasAnyActivity(DailyLog log) =>
+/// A Prayed Day has at least one Daily Prayer, Activity or Novena prayed.
+/// Intentions and the Gratitude Entry on their own don't count.
+bool isPrayedDay(DailyLog log) =>
     log.completedPrayers.isNotEmpty ||
+    (log.completedActivities?.isNotEmpty ?? false) ||
     (log.completedNovenas?.isNotEmpty ?? false);
 
 /// Builds a predicate that checks whether a specific prayer was completed.

@@ -8,30 +8,68 @@ DailyLog _log(String d, {List<String> prayers = const ['mass']}) =>
 void main() {
   final today = DateTime(2026, 5, 1);
 
-  group('calculateStreak (any-activity)', () {
+  group('isPrayedDay', () {
+    test('a Day with only an Activity is a Prayed Day', () {
+      const log = DailyLog(date: '2026-05-01', completedActivities: ['confession']);
+      expect(isPrayedDay(log), isTrue);
+    });
+
+    test('a Day with only a Novena prayed is a Prayed Day', () {
+      const log = DailyLog(date: '2026-05-01', completedNovenas: ['n1']);
+      expect(isPrayedDay(log), isTrue);
+    });
+
+    test('a Day with only a Daily Prayer is a Prayed Day', () {
+      const log = DailyLog(date: '2026-05-01', completedPrayers: ['rosary']);
+      expect(isPrayedDay(log), isTrue);
+    });
+
+    test('a Day with only Intentions ticked is not a Prayed Day', () {
+      const log = DailyLog(date: '2026-05-01', completedIntentions: ['i1']);
+      expect(isPrayedDay(log), isFalse);
+    });
+
+    test('a Day with only a Gratitude Entry is not a Prayed Day', () {
+      const log = DailyLog(date: '2026-05-01', gratitudeEntry: 'Thankful');
+      expect(isPrayedDay(log), isFalse);
+    });
+
+    test('Activity-only Days keep the Streak going', () {
+      final logs = {
+        '2026-04-29': _log('2026-04-29'),
+        '2026-04-30': const DailyLog(date: '2026-04-30', completedActivities: ['adoration']),
+        '2026-05-01': _log('2026-05-01'),
+      };
+      final r = calculateStreak(logs, isPrayedDay, today);
+      expect(r.current, 3);
+      expect(r.best, 3);
+    });
+  });
+
+  group('calculateStreak (Prayed Day)', () {
     test('empty logs → 0/0', () {
-      final r = calculateStreak({}, hasAnyActivity, today);
+      final r = calculateStreak({}, isPrayedDay, today);
       expect(r.current, 0);
       expect(r.best, 0);
     });
 
     test('today only → current 1, best 1', () {
       final logs = {'2026-05-01': _log('2026-05-01')};
-      final r = calculateStreak(logs, hasAnyActivity, today);
+      final r = calculateStreak(logs, isPrayedDay, today);
       expect(r.current, 1);
       expect(r.best, 1);
     });
 
     test('yesterday only → current 1 (forgives empty today), best 1', () {
       final logs = {'2026-04-30': _log('2026-04-30')};
-      final r = calculateStreak(logs, hasAnyActivity, today);
+      final r = calculateStreak(logs, isPrayedDay, today);
       expect(r.current, 1);
       expect(r.best, 1);
     });
 
     test('day-before-yesterday only → current 0 (gap is too big)', () {
       final logs = {'2026-04-29': _log('2026-04-29')};
-      final r = calculateStreak(logs, hasAnyActivity, today);
+      final r = calculateStreak(logs, isPrayedDay, today);
       expect(r.current, 0);
       expect(r.best, 1);
     });
@@ -44,7 +82,7 @@ void main() {
         '2026-04-29': _log('2026-04-29'),
         '2026-04-30': _log('2026-04-30'),
       };
-      final r = calculateStreak(logs, hasAnyActivity, today);
+      final r = calculateStreak(logs, isPrayedDay, today);
       expect(r.current, 5);
       expect(r.best, 5);
     });
@@ -60,7 +98,7 @@ void main() {
         '2026-04-29': _log('2026-04-29'),
         '2026-04-30': _log('2026-04-30'),
       };
-      final r = calculateStreak(logs, hasAnyActivity, today);
+      final r = calculateStreak(logs, isPrayedDay, today);
       expect(r.current, 2);
       expect(r.best, 4);
     });
@@ -69,7 +107,7 @@ void main() {
       final logs = {
         '2026-05-01': _log('2026-05-01', prayers: const []),
       };
-      final r = calculateStreak(logs, hasAnyActivity, today);
+      final r = calculateStreak(logs, isPrayedDay, today);
       expect(r.current, 0);
       expect(r.best, 0);
     });

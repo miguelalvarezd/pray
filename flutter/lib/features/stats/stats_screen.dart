@@ -53,7 +53,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     final month = _month ??= DateTime(today.year, today.month);
     final logs = ref.watch(logsProvider);
 
-    final overall = calculateStreak(logs, hasAnyActivity, today);
+    final overall = calculateStreak(logs, isPrayedDay, today);
     final perPrayer = {
       for (final p in kDefaultPrayers)
         p.id: calculateStreak(logs, hasPrayerCompleted(p.id), today),
@@ -206,7 +206,7 @@ _MonthlyStats _computeMonthlyStats(
       d = d.add(const Duration(days: 1))) {
     if (d.isAfter(todayDate)) break;
     final log = logs[fmt.format(d)];
-    if (log != null && hasAnyActivity(log)) {
+    if (log != null && isPrayedDay(log)) {
       activeDays++;
       totalPrayers += log.completedPrayers.length;
       for (final pid in log.completedPrayers) {
