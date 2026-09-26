@@ -36,7 +36,6 @@ void main() {
           createdAt: '2026-04-01T10:00:00.000Z',
           targetDate: '2026-12-25',
           priority: Priority.high,
-          isArchived: false,
         ),
       );
       await boxes.novenas.put(

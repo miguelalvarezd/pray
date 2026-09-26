@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../data/models/intention.dart';
+import '../../../data/models/intention_status.dart';
 import '../../../data/models/priority.dart';
 
 class IntentionCard extends StatelessWidget {
@@ -24,7 +25,8 @@ class IntentionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isUrgent = urgency > 40 && !intention.isArchived;
+    final isArchived = intention.status == IntentionStatus.archived;
+    final isUrgent = urgency > 40 && !isArchived;
 
     return Container(
       decoration: BoxDecoration(
@@ -105,11 +107,11 @@ class IntentionCard extends StatelessWidget {
           Column(
             children: [
               IconButton(
-                tooltip: intention.isArchived ? 'Restore' : 'Archive',
+                tooltip: isArchived ? 'Restore' : 'Archive',
                 visualDensity: VisualDensity.compact,
                 onPressed: onArchiveToggle,
                 icon: Icon(
-                  intention.isArchived
+                  isArchived
                       ? Icons.unarchive_outlined
                       : Icons.archive_outlined,
                   size: 20,

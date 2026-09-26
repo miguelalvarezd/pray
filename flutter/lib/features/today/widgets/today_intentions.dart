@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/time/current_date_provider.dart';
 import '../../../core/time/logical_day.dart';
 import '../../../data/models/intention.dart';
+import '../../../data/models/intention_status.dart';
 import '../../../data/repositories/intentions_repo.dart';
 import '../../../data/repositories/logs_repo.dart';
 import '../../../domain/intentions_logic.dart';
@@ -23,7 +24,7 @@ class TodayIntentionsList extends ConsumerWidget {
 
     final intentions = ref.watch(intentionsProvider);
     final active = sortIntentions(
-      intentions.where((i) => !i.isArchived),
+      intentions.where((i) => i.status == IntentionStatus.active),
       date,
     ).toList();
 

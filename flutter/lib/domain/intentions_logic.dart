@@ -1,11 +1,12 @@
 import '../data/models/daily_log.dart';
 import '../data/models/intention.dart';
+import '../data/models/intention_status.dart';
 import '../data/models/priority.dart';
 
 /// Urgency score used to sort intentions on the Intentions screen and to
 /// flag urgent items. Mirrors `calculateUrgency` in `src/lib/intentions.ts`.
 double calculateUrgency(Intention i, DateTime now) {
-  if (i.isArchived) return -1;
+  if (i.status != IntentionStatus.active) return -1;
 
   double score = switch (i.priority) {
     Priority.high => 50,

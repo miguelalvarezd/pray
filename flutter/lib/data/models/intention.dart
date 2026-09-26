@@ -1,5 +1,6 @@
 import 'package:hive_ce/hive.dart';
 
+import 'intention_status.dart';
 import 'priority.dart';
 
 part 'intention.g.dart';
@@ -27,8 +28,14 @@ class Intention {
   @HiveField(5)
   final Priority priority;
 
+  /// Archived flag from before schema v2. Only set on records stored by an
+  /// older version of the app; the on-device upgrade turns it into [status]
+  /// and clears it. Never set this on new records.
   @HiveField(6)
-  final bool isArchived;
+  final bool? legacyIsArchived;
+
+  @HiveField(7, defaultValue: IntentionStatus.active)
+  final IntentionStatus status;
 
   const Intention({
     required this.id,
@@ -37,7 +44,8 @@ class Intention {
     required this.createdAt,
     this.targetDate,
     required this.priority,
-    required this.isArchived,
+    this.status = IntentionStatus.active,
+    this.legacyIsArchived,
   });
 
   Intention copyWith({
@@ -47,7 +55,7 @@ class Intention {
     String? createdAt,
     String? targetDate,
     Priority? priority,
-    bool? isArchived,
+    IntentionStatus? status,
   }) =>
       Intention(
         id: id ?? this.id,
@@ -56,7 +64,7 @@ class Intention {
         createdAt: createdAt ?? this.createdAt,
         targetDate: targetDate ?? this.targetDate,
         priority: priority ?? this.priority,
-        isArchived: isArchived ?? this.isArchived,
+        status: status ?? this.status,
       );
 
   Map<String, dynamic> toJson() => {
@@ -66,7 +74,8 @@ class Intention {
         'createdAt': createdAt,
         if (targetDate != null) 'targetDate': targetDate,
         'priority': priority.toJson(),
-        'isArchived': isArchived,
+        'status': status.toJson(),
+        if (legacyIsArchived != null) 'isArchived': legacyIsArchived,
       };
 
   static Intention fromJson(Map<String, dynamic> j) => Intention(
@@ -76,6 +85,7 @@ class Intention {
         createdAt: j['createdAt'] as String,
         targetDate: j['targetDate'] as String?,
         priority: Priority.fromJson(j['priority'] as String),
-        isArchived: (j['isArchived'] as bool?) ?? false,
+        status: IntentionStatus.fromJson(j['status'] as String? ?? 'active'),
+        legacyIsArchived: j['isArchived'] as bool?,
       );
 }

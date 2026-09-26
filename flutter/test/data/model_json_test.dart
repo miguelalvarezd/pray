@@ -15,7 +15,6 @@ void main() {
       createdAt: '2026-04-01T00:00:00.000Z',
       targetDate: '2026-12-25',
       priority: Priority.high,
-      isArchived: false,
     );
     final j = i.toJson();
     final back = Intention.fromJson(j);
@@ -25,7 +24,7 @@ void main() {
     expect(back.createdAt, i.createdAt);
     expect(back.targetDate, i.targetDate);
     expect(back.priority, i.priority);
-    expect(back.isArchived, i.isArchived);
+    expect(back.status, i.status);
   });
 
   test('Novena round-trips through JSON', () {

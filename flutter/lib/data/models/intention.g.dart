@@ -23,14 +23,17 @@ class IntentionAdapter extends TypeAdapter<Intention> {
       createdAt: fields[3] as String,
       targetDate: fields[4] as String?,
       priority: fields[5] as Priority,
-      isArchived: fields[6] as bool,
+      status: fields[7] == null
+          ? IntentionStatus.active
+          : fields[7] as IntentionStatus,
+      legacyIsArchived: fields[6] as bool?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Intention obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +47,9 @@ class IntentionAdapter extends TypeAdapter<Intention> {
       ..writeByte(5)
       ..write(obj.priority)
       ..writeByte(6)
-      ..write(obj.isArchived);
+      ..write(obj.legacyIsArchived)
+      ..writeByte(7)
+      ..write(obj.status);
   }
 
   @override

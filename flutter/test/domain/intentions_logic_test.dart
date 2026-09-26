@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pray/data/models/daily_log.dart';
 import 'package:pray/data/models/intention.dart';
+import 'package:pray/data/models/intention_status.dart';
 import 'package:pray/data/models/priority.dart';
 import 'package:pray/domain/intentions_logic.dart';
 
@@ -9,7 +10,7 @@ Intention _i({
   Priority priority = Priority.medium,
   String? targetDate,
   String createdAt = '2026-04-01T00:00:00.000Z',
-  bool isArchived = false,
+  IntentionStatus status = IntentionStatus.active,
 }) =>
     Intention(
       id: id,
@@ -17,15 +18,15 @@ Intention _i({
       createdAt: createdAt,
       targetDate: targetDate,
       priority: priority,
-      isArchived: isArchived,
+      status: status,
     );
 
 void main() {
   final now = DateTime(2026, 5, 1);
 
   group('calculateUrgency', () {
-    test('archived intentions have negative urgency', () {
-      expect(calculateUrgency(_i(isArchived: true), now), -1);
+    test('Archived Intentions have negative urgency', () {
+      expect(calculateUrgency(_i(status: IntentionStatus.archived), now), -1);
     });
 
     test('priority is the base score when there is no target date', () {

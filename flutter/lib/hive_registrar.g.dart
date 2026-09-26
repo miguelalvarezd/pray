@@ -7,6 +7,7 @@ import 'package:pray/data/models/activity.dart';
 import 'package:pray/data/models/activity_category.dart';
 import 'package:pray/data/models/daily_log.dart';
 import 'package:pray/data/models/intention.dart';
+import 'package:pray/data/models/intention_status.dart';
 import 'package:pray/data/models/novena.dart';
 import 'package:pray/data/models/priority.dart';
 
@@ -16,6 +17,7 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(ActivityCategoryAdapter());
     registerAdapter(DailyLogAdapter());
     registerAdapter(IntentionAdapter());
+    registerAdapter(IntentionStatusAdapter());
     registerAdapter(NovenaAdapter());
     registerAdapter(PriorityAdapter());
   }
@@ -27,6 +29,7 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(ActivityCategoryAdapter());
     registerAdapter(DailyLogAdapter());
     registerAdapter(IntentionAdapter());
+    registerAdapter(IntentionStatusAdapter());
     registerAdapter(NovenaAdapter());
     registerAdapter(PriorityAdapter());
   }

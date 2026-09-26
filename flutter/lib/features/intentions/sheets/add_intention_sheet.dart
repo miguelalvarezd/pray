@@ -89,7 +89,6 @@ class _AddIntentionSheetState extends ConsumerState<_AddIntentionSheet> {
           ? null
           : DateFormat('yyyy-MM-dd').format(_targetDate!),
       priority: _priority,
-      isArchived: false,
     );
     await ref.read(intentionsProvider.notifier).add(intention);
     if (mounted) Navigator.of(context).pop();

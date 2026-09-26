@@ -6,6 +6,9 @@ import '../../core/icons.dart';
 import '../../core/nav/scroll_notifier.dart' show scrollTriggersProvider;
 import '../../core/widgets/expandable_fab.dart';
 import '../../core/time/current_date_provider.dart';
+import '../../core/widgets/undo_snack_bar.dart';
+import '../../data/models/intention.dart';
+import '../../data/models/intention_status.dart';
 import '../../data/models/novena.dart';
 import '../../data/repositories/intentions_repo.dart';
 import '../../data/repositories/logs_repo.dart';
@@ -76,11 +79,11 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
     final prayedCounts = buildIntentionCountMap(logs);
 
     final activeIntentions = sortIntentions(
-      intentions.where((i) => !i.isArchived),
+      intentions.where((i) => i.status == IntentionStatus.active),
       now,
     );
     final archivedIntentions =
-        intentions.where((i) => i.isArchived).toList();
+        intentions.where((i) => i.status == IntentionStatus.archived).toList();
 
     final novenaStatuses = {
       for (final n in novenas) n.id: novenaStatus(n, logs, now),
@@ -191,15 +194,31 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
         intention: it,
         urgency: calculateUrgency(it, now),
         prayedCount: counts[it.id] ?? 0,
-        onArchiveToggle: () => ref
-            .read(intentionsProvider.notifier)
-            .update(it.copyWith(isArchived: !it.isArchived)),
+        onArchiveToggle: () => _toggleArchive(it),
         onDelete: () =>
             ref.read(intentionsProvider.notifier).delete(it.id),
       ));
       if (i < intentions.length - 1) widgets.add(const SizedBox(height: 12));
     }
     return widgets;
+  }
+
+  /// Archives or restores [intention], with an Undo that puts back exactly
+  /// what was there before.
+  Future<void> _toggleArchive(Intention intention) async {
+    final notifier = ref.read(intentionsProvider.notifier);
+    final archiving = intention.status == IntentionStatus.active;
+    if (archiving) {
+      await notifier.archive(intention.id);
+    } else {
+      await notifier.restore(intention.id);
+    }
+    if (!mounted) return;
+    showUndoSnackBar(
+      context,
+      archiving ? 'Intention archived' : 'Intention restored',
+      onUndo: () => notifier.update(intention),
+    );
   }
 
   List<Widget> _buildNovenaList(
