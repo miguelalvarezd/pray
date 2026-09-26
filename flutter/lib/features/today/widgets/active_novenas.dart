@@ -8,6 +8,7 @@ import '../../../core/time/logical_day.dart';
 import '../../../data/models/novena.dart';
 import '../../../data/repositories/logs_repo.dart';
 import '../../../data/repositories/novenas_repo.dart';
+import '../../../domain/novena_logic.dart';
 
 class ActiveNovenas extends ConsumerStatefulWidget {
   const ActiveNovenas({super.key});
@@ -28,12 +29,11 @@ class _ActiveNovenasState extends ConsumerState<ActiveNovenas> {
     final completedNovenas = logs[dateStr]?.completedNovenas ?? const <String>[];
     final novenas = ref.watch(novenasProvider);
 
-    final today = DateTime(date.year, date.month, date.day);
-    final active = novenas.where((n) {
-      final start = DateTime.parse(n.startDate);
-      final diff = today.difference(start).inDays;
-      return diff >= 0 && diff <= 8;
-    }).toList();
+    final active = [
+      for (final n in novenas)
+        if (novenaStatus(n, logs, date) case NovenaInProgress(:final day))
+          (novena: n, day: day),
+    ];
 
     if (active.isEmpty) return const SizedBox.shrink();
 
@@ -51,20 +51,20 @@ class _ActiveNovenasState extends ConsumerState<ActiveNovenas> {
         const SizedBox(height: 12),
         for (var i = 0; i < active.length; i++) ...[
           _NovenaCard(
-            novena: active[i],
-            dayOfNovena: today.difference(DateTime.parse(active[i].startDate)).inDays + 1,
-            done: completedNovenas.contains(active[i].id),
-            expanded: _expanded.contains(active[i].id),
+            novena: active[i].novena,
+            dayOfNovena: active[i].day,
+            done: completedNovenas.contains(active[i].novena.id),
+            expanded: _expanded.contains(active[i].novena.id),
             onToggleExpand: () => setState(() {
-              if (_expanded.contains(active[i].id)) {
-                _expanded.remove(active[i].id);
+              if (_expanded.contains(active[i].novena.id)) {
+                _expanded.remove(active[i].novena.id);
               } else {
-                _expanded.add(active[i].id);
+                _expanded.add(active[i].novena.id);
               }
             }),
             onToggleDone: () => ref
                 .read(logsProvider.notifier)
-                .toggleNovena(dateStr, active[i].id),
+                .toggleNovena(dateStr, active[i].novena.id),
           ),
           if (i < active.length - 1) const SizedBox(height: 12),
         ],

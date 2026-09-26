@@ -4,41 +4,43 @@ import 'package:intl/intl.dart';
 
 import '../../../core/icons.dart';
 import '../../../data/models/novena.dart';
+import '../../../domain/novena_logic.dart';
 
 class NovenaCard extends StatelessWidget {
   const NovenaCard({
     super.key,
     required this.novena,
-    required this.now,
+    required this.status,
     required this.onDelete,
   });
 
   final Novena novena;
-  final DateTime now;
+  final NovenaStatus status;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final start = DateTime.parse(novena.startDate);
-    final daysDiff =
-        DateTime(now.year, now.month, now.day).difference(start).inDays;
-    final dayOfNovena = daysDiff + 1;
-    final isCompleted = dayOfNovena > 9;
-    final isFuture = dayOfNovena < 1;
+    final isPast = status is NovenaCompleted || status is NovenaIncomplete;
 
-    final (chipBg, chipFg) = isCompleted || isFuture
-        ? (scheme.surfaceContainer, scheme.onSurfaceVariant)
-        : (scheme.tertiaryContainer, scheme.onTertiaryContainer);
+    final (chipBg, chipFg) = switch (status) {
+      NovenaInProgress() => (scheme.tertiaryContainer, scheme.onTertiaryContainer),
+      NovenaCompleted() => (scheme.secondaryContainer, scheme.onSecondaryContainer),
+      NovenaUpcoming() || NovenaIncomplete() =>
+        (scheme.surfaceContainer, scheme.onSurfaceVariant),
+    };
 
-    final chipLabel = isCompleted
-        ? 'COMPLETED'
-        : isFuture
-            ? 'STARTS ${DateFormat('MMM d').format(start).toUpperCase()}'
-            : 'DAY $dayOfNovena OF 9';
+    final chipLabel = switch (status) {
+      NovenaUpcoming() =>
+        'STARTS ${DateFormat('MMM d').format(start).toUpperCase()}',
+      NovenaInProgress(:final day) => 'DAY $day OF 9',
+      NovenaCompleted() => 'COMPLETED',
+      NovenaIncomplete(:final daysPrayed) => 'INCOMPLETE · $daysPrayed OF 9',
+    };
 
     return Opacity(
-      opacity: isCompleted ? 0.6 : 1,
+      opacity: isPast ? 0.6 : 1,
       child: Container(
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLow,

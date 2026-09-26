@@ -6,10 +6,12 @@ import '../../core/icons.dart';
 import '../../core/nav/scroll_notifier.dart' show scrollTriggersProvider;
 import '../../core/widgets/expandable_fab.dart';
 import '../../core/time/current_date_provider.dart';
+import '../../data/models/novena.dart';
 import '../../data/repositories/intentions_repo.dart';
 import '../../data/repositories/logs_repo.dart';
 import '../../data/repositories/novenas_repo.dart';
 import '../../domain/intentions_logic.dart';
+import '../../domain/novena_logic.dart';
 import 'sheets/add_intention_sheet.dart';
 import 'sheets/add_novena_sheet.dart';
 import 'widgets/intention_card.dart';
@@ -80,14 +82,15 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
     final archivedIntentions =
         intentions.where((i) => i.isArchived).toList();
 
-    final activeNovenas = novenas.where((n) {
-      final start = DateTime.parse(n.startDate);
-      return DateTime(now.year, now.month, now.day).difference(start).inDays <= 8;
-    }).toList();
-    final historicalNovenas = novenas.where((n) {
-      final start = DateTime.parse(n.startDate);
-      return DateTime(now.year, now.month, now.day).difference(start).inDays > 8;
-    }).toList();
+    final novenaStatuses = {
+      for (final n in novenas) n.id: novenaStatus(n, logs, now),
+    };
+    bool isPast(Novena n) => switch (novenaStatuses[n.id]!) {
+          NovenaCompleted() || NovenaIncomplete() => true,
+          NovenaUpcoming() || NovenaInProgress() => false,
+        };
+    final activeNovenas = novenas.where((n) => !isPast(n)).toList();
+    final historicalNovenas = novenas.where(isPast).toList();
 
     return Scaffold(
       floatingActionButton: ExpandableFab(
@@ -150,7 +153,7 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
                   const SizedBox(height: 16),
                   ..._buildNovenaList(
                     _showArchived ? historicalNovenas : activeNovenas,
-                    now,
+                    novenaStatuses,
                   ),
                 ],
               ],
@@ -199,7 +202,10 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
     return widgets;
   }
 
-  List<Widget> _buildNovenaList(List novenas, DateTime now) {
+  List<Widget> _buildNovenaList(
+    List<Novena> novenas,
+    Map<String, NovenaStatus> statuses,
+  ) {
     if (novenas.isEmpty) {
       return [
         _EmptyState(
@@ -214,7 +220,7 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
       final n = novenas[i];
       widgets.add(NovenaCard(
         novena: n,
-        now: now,
+        status: statuses[n.id]!,
         onDelete: () => ref.read(novenasProvider.notifier).delete(n.id),
       ));
       if (i < novenas.length - 1) widgets.add(const SizedBox(height: 12));
