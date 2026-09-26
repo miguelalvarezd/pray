@@ -18,6 +18,7 @@ import '../../domain/intentions_logic.dart';
 import '../../domain/novena_logic.dart';
 import 'sheets/add_intention_sheet.dart';
 import 'sheets/add_novena_sheet.dart';
+import 'sheets/answer_intention_sheet.dart';
 import 'widgets/intention_card.dart';
 import 'widgets/novena_card.dart';
 
@@ -32,7 +33,10 @@ class IntentionsScreen extends ConsumerStatefulWidget {
 
 class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
   _View _view = _View.intentions;
-  bool _showArchived = false;
+
+  /// Selected sub-tab: Active / Answered / Archived for Intentions, and
+  /// Active / History for Novenas.
+  int _subTab = 0;
   bool _fabOpen = false;
   final _scrollController = ScrollController();
 
@@ -53,7 +57,7 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
   void _switchView(_View v) {
     setState(() {
       _view = v;
-      _showArchived = false;
+      _subTab = 0;
     });
   }
 
@@ -83,6 +87,10 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
       intentions.where((i) => i.status == IntentionStatus.active),
       now,
     );
+    final answeredIntentions = intentions
+        .where((i) => i.status == IntentionStatus.answered)
+        .toList()
+      ..sort((a, b) => (b.answeredOn ?? '').compareTo(a.answeredOn ?? ''));
     final archivedIntentions =
         intentions.where((i) => i.status == IntentionStatus.archived).toList();
 
@@ -134,29 +142,34 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
                 const SizedBox(height: 20),
                 if (_view == _View.intentions) ...[
                   _SubTabs(
-                    activeLabel: 'Active (${activeIntentions.length})',
-                    archivedLabel: 'Archived (${archivedIntentions.length})',
-                    showArchived: _showArchived,
-                    onToggle: (v) => setState(() => _showArchived = v),
+                    labels: [
+                      'Active (${activeIntentions.length})',
+                      'Answered (${answeredIntentions.length})',
+                      'Archived (${archivedIntentions.length})',
+                    ],
+                    selected: _subTab,
+                    onSelect: (v) => setState(() => _subTab = v),
                     scheme: scheme,
                   ),
                   const SizedBox(height: 16),
                   ..._buildIntentionList(
-                    _showArchived ? archivedIntentions : activeIntentions,
+                    [activeIntentions, answeredIntentions, archivedIntentions][_subTab],
                     prayedCounts,
                     now,
                   ),
                 ] else ...[
                   _SubTabs(
-                    activeLabel: 'Active (${activeNovenas.length})',
-                    archivedLabel: 'History (${historicalNovenas.length})',
-                    showArchived: _showArchived,
-                    onToggle: (v) => setState(() => _showArchived = v),
+                    labels: [
+                      'Active (${activeNovenas.length})',
+                      'History (${historicalNovenas.length})',
+                    ],
+                    selected: _subTab,
+                    onSelect: (v) => setState(() => _subTab = v),
                     scheme: scheme,
                   ),
                   const SizedBox(height: 16),
                   ..._buildNovenaList(
-                    _showArchived ? historicalNovenas : activeNovenas,
+                    _subTab == 1 ? historicalNovenas : activeNovenas,
                     novenaStatuses,
                   ),
                 ],
@@ -175,16 +188,18 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
   }
 
   List<Widget> _buildIntentionList(
-    List intentions,
+    List<Intention> intentions,
     Map<String, int> counts,
     DateTime now,
   ) {
     if (intentions.isEmpty) {
       return [
         _EmptyState(
-          message: _showArchived
-              ? 'No archived intentions.'
-              : 'No active intentions.',
+          message: const [
+            'No active intentions.',
+            'No answered intentions yet.',
+            'No archived intentions.',
+          ][_subTab],
         ),
       ];
     }
@@ -195,7 +210,9 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
         intention: it,
         urgency: calculateUrgency(it, now),
         prayedCount: counts[it.id] ?? 0,
-        onArchiveToggle: () => _toggleArchive(it),
+        onAnswer: () => _answer(it),
+        onArchive: () => _changeStatus(it, archive: true),
+        onRestore: () => _changeStatus(it, archive: false),
         onDelete: () =>
             ref.read(intentionsProvider.notifier).delete(it.id),
       ));
@@ -215,21 +232,31 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
     if (confirmed) await ref.read(novenasProvider.notifier).delete(novena.id);
   }
 
-  /// Archives or restores [intention], with an Undo that puts back exactly
-  /// what was there before.
-  Future<void> _toggleArchive(Intention intention) async {
+  Future<void> _answer(Intention intention) async {
+    final answered = await showAnswerIntentionSheet(context, intention);
+    if (!answered || !mounted) return;
+    _offerUndo('Marked answered', intention);
+  }
+
+  /// Archives or restores [intention].
+  Future<void> _changeStatus(Intention intention, {required bool archive}) async {
     final notifier = ref.read(intentionsProvider.notifier);
-    final archiving = intention.status == IntentionStatus.active;
-    if (archiving) {
+    if (archive) {
       await notifier.archive(intention.id);
     } else {
       await notifier.restore(intention.id);
     }
     if (!mounted) return;
+    _offerUndo(archive ? 'Intention archived' : 'Intention restored', intention);
+  }
+
+  /// Shows an Undo that puts [before] back exactly as it was, including any
+  /// answered Day and note.
+  void _offerUndo(String message, Intention before) {
     showUndoSnackBar(
       context,
-      archiving ? 'Intention archived' : 'Intention restored',
-      onUndo: () => notifier.update(intention),
+      message,
+      onUndo: () => ref.read(intentionsProvider.notifier).update(before),
     );
   }
 
@@ -240,9 +267,7 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
     if (novenas.isEmpty) {
       return [
         _EmptyState(
-          message: _showArchived
-              ? 'No past novenas.'
-              : 'No active novenas.',
+          message: _subTab == 1 ? 'No past novenas.' : 'No active novenas.',
         ),
       ];
     }
@@ -340,39 +365,31 @@ class _ViewTabs extends StatelessWidget {
 
 class _SubTabs extends StatelessWidget {
   const _SubTabs({
-    required this.activeLabel,
-    required this.archivedLabel,
-    required this.showArchived,
-    required this.onToggle,
+    required this.labels,
+    required this.selected,
+    required this.onSelect,
     required this.scheme,
   });
-  final String activeLabel;
-  final String archivedLabel;
-  final bool showArchived;
-  final void Function(bool) onToggle;
+  final List<String> labels;
+  final int selected;
+  final void Function(int) onSelect;
   final ColorScheme scheme;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
-        _PillTab(
-          label: activeLabel,
-          selected: !showArchived,
-          activeBg: scheme.primaryContainer,
-          activeFg: scheme.onPrimaryContainer,
-          onTap: () => onToggle(false),
-          dense: true,
-        ),
-        const SizedBox(width: 8),
-        _PillTab(
-          label: archivedLabel,
-          selected: showArchived,
-          activeBg: scheme.primaryContainer,
-          activeFg: scheme.onPrimaryContainer,
-          onTap: () => onToggle(true),
-          dense: true,
-        ),
+        for (var i = 0; i < labels.length; i++)
+          _PillTab(
+            label: labels[i],
+            selected: selected == i,
+            activeBg: scheme.primaryContainer,
+            activeFg: scheme.onPrimaryContainer,
+            onTap: () => onSelect(i),
+            dense: true,
+          ),
       ],
     );
   }

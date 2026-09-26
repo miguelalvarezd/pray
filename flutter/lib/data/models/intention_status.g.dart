@@ -17,6 +17,8 @@ class IntentionStatusAdapter extends TypeAdapter<IntentionStatus> {
         return IntentionStatus.active;
       case 1:
         return IntentionStatus.archived;
+      case 2:
+        return IntentionStatus.answered;
       default:
         return IntentionStatus.active;
     }
@@ -29,6 +31,8 @@ class IntentionStatusAdapter extends TypeAdapter<IntentionStatus> {
         writer.writeByte(0);
       case IntentionStatus.archived:
         writer.writeByte(1);
+      case IntentionStatus.answered:
+        writer.writeByte(2);
     }
   }
 

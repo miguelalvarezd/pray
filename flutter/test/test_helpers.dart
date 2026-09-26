@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pray/app.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:pray/data/boxes.dart';
 import 'package:pray/data/providers.dart';
@@ -45,3 +46,35 @@ Future<void> tearDownTestHive(AppBoxes boxes, Directory tmp) async {
 ProviderContainer createTestContainer(AppBoxes boxes) => ProviderContainer(
       overrides: [appBoxesProvider.overrideWithValue(boxes)],
     );
+
+/// Boots the whole app over in-memory [boxes], pinned to [day] (`YYYY-MM-DD`)
+/// via the date override so date-dependent screens are deterministic.
+Future<AppBoxes> pumpPrayApp(
+  WidgetTester tester, {
+  required String day,
+  Future<void> Function(AppBoxes boxes)? seed,
+}) async {
+  final (boxes, tmp) = await initTestHiveInWidgetTest(tester);
+  addTearDown(() async => tester.runAsync(() => tearDownTestHive(boxes, tmp)));
+  await tester.runAsync(() async {
+    await boxes.settings.put(SettingsKeys.dateOverride, day);
+    await seed?.call(boxes);
+  });
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [appBoxesProvider.overrideWithValue(boxes)],
+      child: const PrayApp(),
+    ),
+  );
+  await settle(tester);
+  return boxes;
+}
+
+/// The app never fully settles (network-backed providers and ambient
+/// animations), so pump a fixed number of frames instead of
+/// `pumpAndSettle`.
+Future<void> settle(WidgetTester tester) async {
+  for (var i = 0; i < 10; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}

@@ -7,6 +7,7 @@ typedef MigrationStep = Map<String, dynamic> Function(Map<String, dynamic> data)
 const List<MigrationStep> kMigrationSteps = [
   identityStep,
   intentionStatusStep,
+  answeredIntentionsStep,
 ];
 
 /// Schema version for exported backups and for data stored on the device.
@@ -23,6 +24,11 @@ Map<String, dynamic> intentionStatusStep(Map<String, dynamic> data) =>
       if (archived is bool) i['status'] = archived ? 'archived' : 'active';
       return i;
     });
+
+/// v2 → v3: adds the Answered status with its Day and note. Nothing to
+/// transform; the version bump keeps older apps from misreading Answered
+/// Intentions as active.
+Map<String, dynamic> answeredIntentionsStep(Map<String, dynamic> data) => data;
 
 Map<String, dynamic> _mapIntentions(
   Map<String, dynamic> data,

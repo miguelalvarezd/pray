@@ -179,6 +179,28 @@ void main() {
       expect(boxes.intentions.get('a')!.status, IntentionStatus.archived);
     });
   });
+
+  test('export then import keeps an Answered Intention with its Day and note', () async {
+    final service = BackupService(boxes);
+    await boxes.intentions.put(
+      'a',
+      _intention('a', 'Job').withStatus(
+        IntentionStatus.answered,
+        answeredOn: '2026-05-02',
+        answerNote: 'Offer accepted',
+      ),
+    );
+    final exported = service.buildExport(now: DateTime.utc(2026, 5, 3)).toJson();
+    await boxes.intentions.clear();
+
+    final result = service.parseBackup(exported);
+    await service.applyImport((result as ImportOk).data);
+
+    final back = boxes.intentions.get('a')!;
+    expect(back.status, IntentionStatus.answered);
+    expect(back.answeredOn, '2026-05-02');
+    expect(back.answerNote, 'Offer accepted');
+  });
 }
 
 /// An Intention as the React app and schema v1 exported it.

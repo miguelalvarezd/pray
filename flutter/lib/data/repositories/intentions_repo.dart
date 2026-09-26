@@ -21,15 +21,28 @@ class IntentionsNotifier extends Notifier<List<Intention>> {
     ref.invalidateSelf();
   }
 
-  Future<void> archive(String id) => _setStatus(id, IntentionStatus.archived);
+  /// Marks the Intention Answered on [day] (`YYYY-MM-DD`), with an optional
+  /// [note] on how it was answered.
+  Future<void> answer(String id, {required String day, String? note}) =>
+      _replace(id, (i) => i.withStatus(
+            IntentionStatus.answered,
+            answeredOn: day,
+            answerNote: (note == null || note.trim().isEmpty) ? null : note.trim(),
+          ));
 
-  Future<void> restore(String id) => _setStatus(id, IntentionStatus.active);
+  Future<void> archive(String id) =>
+      _replace(id, (i) => i.withStatus(IntentionStatus.archived));
 
-  Future<void> _setStatus(String id, IntentionStatus status) async {
+  /// Makes an Answered or Archived Intention active again. Any answered Day
+  /// and note are cleared.
+  Future<void> restore(String id) =>
+      _replace(id, (i) => i.withStatus(IntentionStatus.active));
+
+  Future<void> _replace(String id, Intention Function(Intention) change) async {
     final box = ref.read(intentionsBoxProvider);
     final current = box.get(id);
     if (current == null) return;
-    await box.put(id, current.copyWith(status: status));
+    await box.put(id, change(current));
     ref.invalidateSelf();
   }
 

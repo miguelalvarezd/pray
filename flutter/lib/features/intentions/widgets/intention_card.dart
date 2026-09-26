@@ -12,21 +12,26 @@ class IntentionCard extends StatelessWidget {
     required this.intention,
     required this.urgency,
     required this.prayedCount,
-    required this.onArchiveToggle,
+    required this.onAnswer,
+    required this.onArchive,
+    required this.onRestore,
     required this.onDelete,
   });
 
   final Intention intention;
   final double urgency;
   final int prayedCount;
-  final VoidCallback onArchiveToggle;
+  final VoidCallback onAnswer;
+  final VoidCallback onArchive;
+  final VoidCallback onRestore;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isArchived = intention.status == IntentionStatus.archived;
-    final isUrgent = urgency > 40 && !isArchived;
+    final isActive = intention.status == IntentionStatus.active;
+    final isAnswered = intention.status == IntentionStatus.answered;
+    final isUrgent = urgency > 40 && isActive;
 
     return Container(
       decoration: BoxDecoration(
@@ -77,6 +82,18 @@ class IntentionCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
+                if (isAnswered && intention.answerNote != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    intention.answerNote!,
+                    style: GoogleFonts.newsreader(
+                      fontSize: 15,
+                      fontStyle: FontStyle.italic,
+                      color: scheme.onSurface,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 6,
@@ -89,6 +106,14 @@ class IntentionCard extends StatelessWidget {
                             'Target: ${DateFormat('MMM d, yyyy').format(DateTime.parse(intention.targetDate!))}',
                         bg: scheme.surfaceContainer,
                         fg: scheme.onSurfaceVariant,
+                      ),
+                    if (isAnswered && intention.answeredOn != null)
+                      _Chip(
+                        label:
+                            'Answered ${DateFormat('MMM d, yyyy').format(DateTime.parse(intention.answeredOn!))}',
+                        bg: scheme.secondaryContainer,
+                        fg: scheme.onSecondaryContainer,
+                        icon: Icons.check_circle_outline,
                       ),
                     if (prayedCount > 0)
                       _Chip(
@@ -106,18 +131,29 @@ class IntentionCard extends StatelessWidget {
           const SizedBox(width: 8),
           Column(
             children: [
-              IconButton(
-                tooltip: isArchived ? 'Restore' : 'Archive',
-                visualDensity: VisualDensity.compact,
-                onPressed: onArchiveToggle,
-                icon: Icon(
-                  isArchived
-                      ? Icons.unarchive_outlined
-                      : Icons.archive_outlined,
-                  size: 20,
-                  color: scheme.outline,
+              if (isActive) ...[
+                IconButton(
+                  tooltip: 'Mark answered',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onAnswer,
+                  icon: Icon(Icons.check_circle_outline,
+                      size: 20, color: scheme.outline),
                 ),
-              ),
+                IconButton(
+                  tooltip: 'Archive',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onArchive,
+                  icon: Icon(Icons.archive_outlined,
+                      size: 20, color: scheme.outline),
+                ),
+              ] else
+                IconButton(
+                  tooltip: 'Restore',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onRestore,
+                  icon: Icon(Icons.unarchive_outlined,
+                      size: 20, color: scheme.outline),
+                ),
               IconButton(
                 tooltip: 'Delete',
                 visualDensity: VisualDensity.compact,

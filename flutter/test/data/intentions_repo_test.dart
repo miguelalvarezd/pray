@@ -48,4 +48,44 @@ void main() {
     await notifier().restore('i1');
     expect(stored('i1').status, IntentionStatus.active);
   });
+
+  test('marking an Intention Answered records the Day and note', () async {
+    await notifier().add(_mom);
+    await notifier().answer('i1', day: '2026-05-02', note: 'Surgery went well');
+
+    final answered = stored('i1');
+    expect(answered.status, IntentionStatus.answered);
+    expect(answered.answeredOn, '2026-05-02');
+    expect(answered.answerNote, 'Surgery went well');
+  });
+
+  test('an Intention can be Answered without a note', () async {
+    await notifier().add(_mom);
+    await notifier().answer('i1', day: '2026-05-02', note: '  ');
+    expect(stored('i1').answerNote, isNull);
+  });
+
+  test('restoring an Answered Intention clears its answered Day and note', () async {
+    await notifier().add(_mom);
+    await notifier().answer('i1', day: '2026-05-02', note: 'Surgery went well');
+    await notifier().restore('i1');
+
+    final restored = stored('i1');
+    expect(restored.status, IntentionStatus.active);
+    expect(restored.answeredOn, isNull);
+    expect(restored.answerNote, isNull);
+  });
+
+  test('putting back the previous Intention undoes a restore, answer included', () async {
+    await notifier().add(_mom);
+    await notifier().answer('i1', day: '2026-05-02', note: 'Surgery went well');
+    final before = stored('i1');
+    await notifier().restore('i1');
+
+    await notifier().update(before);
+
+    expect(stored('i1').status, IntentionStatus.answered);
+    expect(stored('i1').answeredOn, '2026-05-02');
+    expect(stored('i1').answerNote, 'Surgery went well');
+  });
 }

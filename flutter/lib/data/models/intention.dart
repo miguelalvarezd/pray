@@ -37,6 +37,15 @@ class Intention {
   @HiveField(7, defaultValue: IntentionStatus.active)
   final IntentionStatus status;
 
+  /// The Day (`YYYY-MM-DD`) the Intention was Answered. Only set while
+  /// [status] is [IntentionStatus.answered].
+  @HiveField(8)
+  final String? answeredOn;
+
+  /// Optional note on how the Intention was Answered.
+  @HiveField(9)
+  final String? answerNote;
+
   const Intention({
     required this.id,
     required this.title,
@@ -45,6 +54,8 @@ class Intention {
     this.targetDate,
     required this.priority,
     this.status = IntentionStatus.active,
+    this.answeredOn,
+    this.answerNote,
     this.legacyIsArchived,
   });
 
@@ -65,6 +76,27 @@ class Intention {
         targetDate: targetDate ?? this.targetDate,
         priority: priority ?? this.priority,
         status: status ?? this.status,
+        answeredOn: answeredOn,
+        answerNote: answerNote,
+      );
+
+  /// This Intention with [status], and the answer fields set exactly as
+  /// given, so leaving the Answered state always clears them.
+  Intention withStatus(
+    IntentionStatus status, {
+    String? answeredOn,
+    String? answerNote,
+  }) =>
+      Intention(
+        id: id,
+        title: title,
+        description: description,
+        createdAt: createdAt,
+        targetDate: targetDate,
+        priority: priority,
+        status: status,
+        answeredOn: answeredOn,
+        answerNote: answerNote,
       );
 
   Map<String, dynamic> toJson() => {
@@ -75,6 +107,8 @@ class Intention {
         if (targetDate != null) 'targetDate': targetDate,
         'priority': priority.toJson(),
         'status': status.toJson(),
+        if (answeredOn != null) 'answeredOn': answeredOn,
+        if (answerNote != null) 'answerNote': answerNote,
         if (legacyIsArchived != null) 'isArchived': legacyIsArchived,
       };
 
@@ -86,6 +120,8 @@ class Intention {
         targetDate: j['targetDate'] as String?,
         priority: Priority.fromJson(j['priority'] as String),
         status: IntentionStatus.fromJson(j['status'] as String? ?? 'active'),
+        answeredOn: j['answeredOn'] as String?,
+        answerNote: j['answerNote'] as String?,
         legacyIsArchived: j['isArchived'] as bool?,
       );
 }

@@ -26,6 +26,8 @@ class IntentionAdapter extends TypeAdapter<Intention> {
       status: fields[7] == null
           ? IntentionStatus.active
           : fields[7] as IntentionStatus,
+      answeredOn: fields[8] as String?,
+      answerNote: fields[9] as String?,
       legacyIsArchived: fields[6] as bool?,
     );
   }
@@ -33,7 +35,7 @@ class IntentionAdapter extends TypeAdapter<Intention> {
   @override
   void write(BinaryWriter writer, Intention obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -49,7 +51,11 @@ class IntentionAdapter extends TypeAdapter<Intention> {
       ..writeByte(6)
       ..write(obj.legacyIsArchived)
       ..writeByte(7)
-      ..write(obj.status);
+      ..write(obj.status)
+      ..writeByte(8)
+      ..write(obj.answeredOn)
+      ..writeByte(9)
+      ..write(obj.answerNote);
   }
 
   @override
