@@ -41,6 +41,16 @@ class NovenasNotifier extends Notifier<List<Novena>> {
     await add(toStart);
   }
 
+  /// Unlinks every Novena offered for a deleted Intention. The Novenas are
+  /// kept, offered for no Intention.
+  Future<void> unlinkIntention(String intentionId) async {
+    final box = ref.read(novenasBoxProvider);
+    for (final n in box.values.toList()) {
+      if (n.intentionId == intentionId) await box.put(n.id, n.offeredFor(null));
+    }
+    ref.invalidateSelf();
+  }
+
   /// Deletes the Novena and removes it from every past Daily Log.
   Future<void> delete(String id) async {
     await ref.read(novenasBoxProvider).delete(id);

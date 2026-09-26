@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/intention.dart';
 import '../models/intention_status.dart';
 import '../providers.dart';
+import 'logs_repo.dart';
+import 'novenas_repo.dart';
 
 class IntentionsNotifier extends Notifier<List<Intention>> {
   @override
@@ -51,8 +53,12 @@ class IntentionsNotifier extends Notifier<List<Intention>> {
     ref.invalidateSelf();
   }
 
+  /// Deletes the Intention, removes it from every past Daily Log, and
+  /// unlinks any Novenas offered for it.
   Future<void> delete(String id) async {
     await ref.read(intentionsBoxProvider).delete(id);
+    await ref.read(logsProvider.notifier).forgetIntention(id);
+    await ref.read(novenasProvider.notifier).unlinkIntention(id);
     ref.invalidateSelf();
   }
 }

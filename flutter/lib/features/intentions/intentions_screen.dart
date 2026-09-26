@@ -220,12 +220,26 @@ class _IntentionsScreenState extends ConsumerState<IntentionsScreen> {
         onAnswer: () => _answer(it),
         onArchive: () => _changeStatus(it, archive: true),
         onRestore: () => _changeStatus(it, archive: false),
-        onDelete: () =>
-            ref.read(intentionsProvider.notifier).delete(it.id),
+        onDelete: () => _confirmDeleteIntention(it),
       ));
       if (i < intentions.length - 1) widgets.add(const SizedBox(height: 12));
     }
     return widgets;
+  }
+
+  Future<void> _confirmDeleteIntention(Intention intention) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Delete this intention?',
+      message:
+          '"${intention.title}" and its record in your history will be removed. '
+          'This can\'t be undone.\n\n'
+          'To stop praying for it but keep its history, archive it instead.',
+      confirmLabel: 'Delete',
+    );
+    if (confirmed) {
+      await ref.read(intentionsProvider.notifier).delete(intention.id);
+    }
   }
 
   Future<void> _confirmDeleteNovena(Novena novena) async {

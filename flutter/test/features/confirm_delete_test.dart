@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pray/data/boxes.dart';
+import 'package:pray/data/models/intention.dart';
 import 'package:pray/data/models/novena.dart';
+import 'package:pray/data/models/priority.dart';
 
 import '../test_helpers.dart';
 
@@ -52,5 +54,48 @@ void main() {
     await settle(tester);
 
     expect(boxes.novenas.containsKey('n1'), isFalse);
+  });
+
+  group('deleting an Intention', () {
+    Future<AppBoxes> openIntentions(WidgetTester tester) async {
+      final boxes = await pumpPrayApp(
+        tester,
+        day: '2026-05-03',
+        seed: (boxes) => boxes.intentions.put(
+          'i1',
+          const Intention(
+            id: 'i1',
+            title: "Mom's surgery",
+            createdAt: '2026-04-01T10:00:00.000Z',
+            priority: Priority.high,
+          ),
+        ),
+      );
+      await tester.tap(find.text('Intentions').last);
+      await settle(tester);
+      await tapDelete(tester);
+      return boxes;
+    }
+
+    testWidgets('cancelling keeps the Intention, and the dialog suggests archiving',
+        (tester) async {
+      final boxes = await openIntentions(tester);
+
+      expect(find.text('Delete this intention?'), findsOneWidget);
+      expect(find.textContaining('archive it instead'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await settle(tester);
+
+      expect(boxes.intentions.containsKey('i1'), isTrue);
+    });
+
+    testWidgets('confirming removes the Intention', (tester) async {
+      final boxes = await openIntentions(tester);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+      await settle(tester);
+
+      expect(boxes.intentions.containsKey('i1'), isFalse);
+    });
   });
 }

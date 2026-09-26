@@ -1,10 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pray/data/boxes.dart';
+import 'package:pray/data/models/daily_log.dart';
 import 'package:pray/data/models/intention.dart';
 import 'package:pray/data/models/intention_status.dart';
+import 'package:pray/data/models/novena.dart';
 import 'package:pray/data/models/priority.dart';
 import 'package:pray/data/repositories/intentions_repo.dart';
+import 'package:pray/data/repositories/logs_repo.dart';
+import 'package:pray/data/repositories/novenas_repo.dart';
 
 import '../test_helpers.dart';
 
@@ -105,6 +109,39 @@ void main() {
       await notifier().keepPraying('i1', newTargetDate: '2026-06-01');
 
       expect(stored('i1').targetDate, '2026-06-01');
+    });
+  });
+
+  group('deleting an Intention', () {
+    test('removes it from every past Daily Log', () async {
+      await notifier().add(_mom);
+      final logs = container.read(logsProvider.notifier);
+      await logs.save(const DailyLog(date: '2026-05-01', completedIntentions: ['i1', 'i2']));
+      await logs.save(const DailyLog(date: '2026-05-02', completedIntentions: ['i1']));
+
+      await notifier().delete('i1');
+
+      expect(container.read(intentionsProvider), isEmpty);
+      final after = container.read(logsProvider);
+      expect(after['2026-05-01']!.completedIntentions, ['i2']);
+      expect(after['2026-05-02']!.completedIntentions, isEmpty);
+    });
+
+    test('keeps the Novenas offered for it, with no Intention', () async {
+      await notifier().add(_mom);
+      await container.read(novenasProvider.notifier).add(const Novena(
+            id: 'n1',
+            title: 'St. Jude',
+            intentionId: 'i1',
+            startDate: '2026-05-01',
+            createdAt: '2026-05-01T08:00:00.000Z',
+          ));
+
+      await notifier().delete('i1');
+
+      final novena = container.read(novenasProvider).single;
+      expect(novena.id, 'n1');
+      expect(novena.intentionId, isNull);
     });
   });
 }

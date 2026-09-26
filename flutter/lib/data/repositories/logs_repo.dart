@@ -44,16 +44,30 @@ class LogsNotifier extends Notifier<Map<String, DailyLog>> {
   }
 
   /// Removes a deleted Novena from every Daily Log.
-  Future<void> forgetNovena(String novenaId) async {
+  Future<void> forgetNovena(String novenaId) => _forget(
+        (log) => log.completedNovenas,
+        (log, ids) => log.copyWith(completedNovenas: ids),
+        novenaId,
+      );
+
+  /// Removes a deleted Intention from every Daily Log.
+  Future<void> forgetIntention(String intentionId) => _forget(
+        (log) => log.completedIntentions,
+        (log, ids) => log.copyWith(completedIntentions: ids),
+        intentionId,
+      );
+
+  Future<void> _forget(
+    List<String>? Function(DailyLog) read,
+    DailyLog Function(DailyLog, List<String>) write,
+    String id,
+  ) async {
     final box = ref.read(logsBoxProvider);
     for (final key in box.keys.toList()) {
       final log = box.get(key)!;
-      final ids = log.completedNovenas;
-      if (ids == null || !ids.contains(novenaId)) continue;
-      await box.put(
-        key,
-        log.copyWith(completedNovenas: ids.where((id) => id != novenaId).toList()),
-      );
+      final ids = read(log);
+      if (ids == null || !ids.contains(id)) continue;
+      await box.put(key, write(log, ids.where((x) => x != id).toList()));
     }
     ref.invalidateSelf();
   }
