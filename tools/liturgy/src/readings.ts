@@ -4,6 +4,7 @@ import {
   type LectionaryRow,
   type Reference,
 } from './lectionary.ts';
+import { SPAIN_PROPERS, SPAIN_VERSES } from './spain.ts';
 
 export type ReadingKind = 'first' | 'psalm' | 'second' | 'gospel';
 
@@ -113,11 +114,20 @@ export class ReadingsResolver {
       };
     }
 
+    const spain = spainPropers(entry);
+    if (spain) return spain;
+
     if (own) {
       const found = this.readingsOf(own, entry);
       if (found && hasCoreReadings(found.readings)) return found;
     }
-    if (entry.cycles.properCycle !== 'PROPER_OF_TIME' || PROPER_OF_TIME_DAYS[entry.id]) {
+    // Solemnities, Feasts and Sundays should have Readings of their own.
+    if (
+      entry.cycles.properCycle !== 'PROPER_OF_TIME' ||
+      PROPER_OF_TIME_DAYS[entry.id] ||
+      entry.rank === 'SOLEMNITY' ||
+      entry.rank === 'FEAST'
+    ) {
       this.missingPropers.add(entry.id);
     }
     return this.readingsOf(weekday, entry);
@@ -189,7 +199,9 @@ export class ReadingsResolver {
     const rows = used.flatMap((id) => this.lectionary.days.get(id)!);
     if (rows.length === 0) return null;
     const readings = dayId === 'LW06-6Sat' ? easterVigil(rows) : this.withCommons(toReadings(rows), rows);
-    return readings.length > 0 ? { key: used.join('+'), readings } : null;
+    return readings.length > 0
+      ? { key: used.join('+'), readings: withSpainVerses(readings, used) }
+      : null;
   }
 
   /** Fills Readings a day takes from a common (slot 9, e.g. `_Church`). */
@@ -202,6 +214,27 @@ export class ReadingsResolver {
     const kinds = new Set(readings.map((r) => r.kind));
     return sortReadings([...readings, ...fromCommon.filter((r) => !kinds.has(r.kind))]);
   }
+}
+
+/** Spain's own Readings for a Celebration, if it has them. */
+function spainPropers(entry: RomcalEntry): { key: string; readings: Reading[] } | null {
+  const proper = SPAIN_PROPERS[entry.id];
+  if (!proper) return null;
+  if (Array.isArray(proper)) return { key: `spain:${entry.id}`, readings: proper };
+  const cycle = entry.cycles.sundayCycle.replace('YEAR_', '') as 'A' | 'B' | 'C';
+  return { key: `spain:${entry.id} ${cycle}`, readings: proper[cycle] };
+}
+
+/** Applies Spain's verse ranges where they differ from the seed's. */
+function withSpainVerses(readings: Reading[], dayIds: string[]): Reading[] {
+  const fixes = dayIds.flatMap((id) => Object.entries(SPAIN_VERSES[id] ?? {}));
+  if (fixes.length === 0) return readings;
+  return readings.map((reading) => {
+    const fix = fixes.find(([kind]) => kind === reading.kind)?.[1];
+    if (!fix) return reading;
+    const [book, passage] = fix;
+    return { ...reading, options: [{ book, passage }, ...reading.options.slice(1)] };
+  });
 }
 
 /** Groups rows into Readings; options within a kind keep the seed's order. */

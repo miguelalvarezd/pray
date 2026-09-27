@@ -13,4 +13,6 @@ It uses [romcal](https://github.com/romcal/romcal) (MIT) with Spain's national c
 - the Ascension and Corpus Christi move to Sunday;
 - San Ildefonso is an obligatory Memorial.
 
+Reading References come from the public-domain Tamil Catholic Lectionary (`data/tamil-lectionary/`). Spain's own proper Readings, and the verses where Spain's lectionary differs from the seed, are entered by hand in `src/spain.ts`. Each one is checked against the CEE's calendar, which is used only for checking and never copied wholesale (issue #16).
+
 Regenerate with a later end year (`TO_YEAR` in `src/cli.ts`) before the app's range test starts failing, which happens 3 years before the end.
