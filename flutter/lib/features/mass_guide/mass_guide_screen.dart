@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/time/current_date_provider.dart';
 import '../../core/time/logical_day.dart';
-import '../../data/settings/mass_lang.dart';
 import '../../data/boxes.dart';
 import '../../data/providers.dart';
 import '../../data/repositories/logs_repo.dart';
+import '../../data/settings/mass_lang.dart';
 import '../../domain/mass/index.dart';
+import '../../services/liturgy/liturgical_calendar.dart';
+import 'mass_readings.dart';
 import 'sheets/mass_settings_sheet.dart';
 import 'widgets/mass_step_view.dart';
 
@@ -123,6 +125,10 @@ class _MassGuideScreenState extends ConsumerState<MassGuideScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final references = readingReferencesByStep(
+      ref.watch(liturgicalDayProvider(ref.watch(currentDateProvider))),
+      _settings.lang,
+    );
     final scheme = Theme.of(context).colorScheme;
     final group = _groups[_index];
     final isComplete =
@@ -182,6 +188,7 @@ class _MassGuideScreenState extends ConsumerState<MassGuideScreen> {
                   steps: _groups[i],
                   lang: _settings.lang,
                   secondaryLang: _settings.secondaryLang,
+                  references: references,
                 ),
               ),
             ),

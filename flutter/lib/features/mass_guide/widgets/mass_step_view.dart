@@ -10,11 +10,15 @@ class MassStepGroupView extends StatelessWidget {
     required this.steps,
     required this.lang,
     this.secondaryLang,
+    this.references = const {},
   });
 
   final List<MassStep> steps;
   final Lang lang;
   final Lang? secondaryLang;
+
+  /// Reading References for this Day, by step id.
+  final Map<String, String> references;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +28,12 @@ class MassStepGroupView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (var i = 0; i < steps.length; i++) ...[
-            _StepBlock(step: steps[i], lang: lang, secondaryLang: secondaryLang),
+            _StepBlock(
+              step: steps[i],
+              lang: lang,
+              secondaryLang: secondaryLang,
+              reference: references[steps[i].id],
+            ),
             if (i < steps.length - 1) const SizedBox(height: 24),
           ],
         ],
@@ -34,10 +43,18 @@ class MassStepGroupView extends StatelessWidget {
 }
 
 class _StepBlock extends StatelessWidget {
-  const _StepBlock({required this.step, required this.lang, this.secondaryLang});
+  const _StepBlock({
+    required this.step,
+    required this.lang,
+    this.secondaryLang,
+    this.reference,
+  });
   final MassStep step;
   final Lang lang;
   final Lang? secondaryLang;
+
+  /// The Day's Reading Reference, on a Reading step.
+  final String? reference;
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +132,18 @@ class _StepBlock extends StatelessWidget {
             ),
           ),
         if (step.title != null) const SizedBox(height: 6),
+        if (reference != null) ...[
+          Text(
+            reference!,
+            key: ValueKey('reading-reference-${step.id}'),
+            style: GoogleFonts.newsreader(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              color: scheme.primary,
+            ),
+          ),
+          const SizedBox(height: 6),
+        ],
         if (step.kind == MassStepKind.response)
           _ResponseBlock(step: step, lang: lang, secondaryLang: secondaryLang)
         else
