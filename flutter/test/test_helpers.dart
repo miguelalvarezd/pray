@@ -78,3 +78,11 @@ Future<void> settle(WidgetTester tester) async {
     await tester.pump(const Duration(milliseconds: 100));
   }
 }
+
+/// Opens the ⋮ menu on the first Intention card and taps [action].
+Future<void> chooseIntentionAction(WidgetTester tester, String action) async {
+  await tester.tap(find.byTooltip('Intention actions').first);
+  await settle(tester);
+  await tester.tap(find.text(action).last);
+  await settle(tester);
+}

@@ -28,8 +28,7 @@ void main() {
   }
 
   Future<void> markAnswered(WidgetTester tester, {String? note}) async {
-    await tester.tap(find.byTooltip('Mark answered'));
-    await settle(tester);
+    await chooseIntentionAction(tester, 'Mark answered');
     if (note != null) {
       await tester.enterText(find.byType(TextField), note);
     }
@@ -59,5 +58,20 @@ void main() {
     final restored = boxes.intentions.get('i1')!;
     expect(restored.status, IntentionStatus.active);
     expect(restored.answeredOn, isNull);
+  });
+
+  testWidgets('an Answered Intention\'s menu offers Restore and Delete', (tester) async {
+    await openIntentions(tester);
+    await markAnswered(tester);
+    await tester.tap(find.text('Answered (1)'));
+    await settle(tester);
+
+    await tester.tap(find.byTooltip('Intention actions').first);
+    await settle(tester);
+
+    expect(find.text('Restore'), findsOneWidget);
+    expect(find.text('Delete'), findsOneWidget);
+    expect(find.text('Mark answered'), findsNothing);
+    expect(find.text('Archive'), findsNothing);
   });
 }

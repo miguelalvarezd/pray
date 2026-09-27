@@ -73,7 +73,7 @@ void main() {
       );
       await tester.tap(find.text('Intentions').last);
       await settle(tester);
-      await tapDelete(tester);
+      await chooseIntentionAction(tester, 'Delete');
       return boxes;
     }
 

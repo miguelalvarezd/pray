@@ -142,43 +142,74 @@ class IntentionCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Column(
-            children: [
-              if (isActive) ...[
-                IconButton(
-                  tooltip: 'Mark answered',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: onAnswer,
-                  icon: Icon(Icons.check_circle_outline,
-                      size: 20, color: scheme.outline),
-                ),
-                IconButton(
-                  tooltip: 'Archive',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: onArchive,
-                  icon: Icon(Icons.archive_outlined,
-                      size: 20, color: scheme.outline),
-                ),
-              ] else
-                IconButton(
-                  tooltip: 'Restore',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: onRestore,
-                  icon: Icon(Icons.unarchive_outlined,
-                      size: 20, color: scheme.outline),
-                ),
-              IconButton(
-                tooltip: 'Delete',
-                visualDensity: VisualDensity.compact,
-                onPressed: onDelete,
-                icon: Icon(Icons.delete_outline,
-                    size: 20, color: scheme.outline),
-              ),
-            ],
+          _IntentionMenu(
+            isActive: isActive,
+            onAnswer: onAnswer,
+            onArchive: onArchive,
+            onRestore: onRestore,
+            onDelete: onDelete,
           ),
         ],
       ),
+    );
+  }
+}
+
+enum _IntentionAction { answer, archive, restore, delete }
+
+/// The card's actions, in a ⋮ menu so they don't set the card's height.
+class _IntentionMenu extends StatelessWidget {
+  const _IntentionMenu({
+    required this.isActive,
+    required this.onAnswer,
+    required this.onArchive,
+    required this.onRestore,
+    required this.onDelete,
+  });
+  final bool isActive;
+  final VoidCallback onAnswer;
+  final VoidCallback onArchive;
+  final VoidCallback onRestore;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    PopupMenuItem<_IntentionAction> item(
+      _IntentionAction value,
+      IconData icon,
+      String label,
+    ) =>
+        PopupMenuItem(
+          value: value,
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 12),
+              Text(label),
+            ],
+          ),
+        );
+
+    return PopupMenuButton<_IntentionAction>(
+      tooltip: 'Intention actions',
+      icon: Icon(Icons.more_vert, size: 20, color: scheme.outline),
+      padding: EdgeInsets.zero,
+      style: const ButtonStyle(visualDensity: VisualDensity.compact),
+      onSelected: (action) => switch (action) {
+        _IntentionAction.answer => onAnswer(),
+        _IntentionAction.archive => onArchive(),
+        _IntentionAction.restore => onRestore(),
+        _IntentionAction.delete => onDelete(),
+      },
+      itemBuilder: (_) => [
+        if (isActive) ...[
+          item(_IntentionAction.answer, Icons.check_circle_outline, 'Mark answered'),
+          item(_IntentionAction.archive, Icons.archive_outlined, 'Archive'),
+        ] else
+          item(_IntentionAction.restore, Icons.unarchive_outlined, 'Restore'),
+        item(_IntentionAction.delete, Icons.delete_outline, 'Delete'),
+      ],
     );
   }
 }
