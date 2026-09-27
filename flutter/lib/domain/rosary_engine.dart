@@ -607,3 +607,11 @@ List<RosaryStep> generateRosarySteps(MysterySet set) {
 
   return steps;
 }
+
+/// Whether moving from [a] to [b] stays on the same prayer (e.g. one Hail
+/// Mary to the next), so the guide can update in place and only move the
+/// beads. Subtitles such as "3 of 10" may differ.
+bool isSamePrayer(RosaryStep a, RosaryStep b) =>
+    a.type == b.type &&
+    a.prayerTitle == b.prayerTitle &&
+    a.prayerText == b.prayerText;

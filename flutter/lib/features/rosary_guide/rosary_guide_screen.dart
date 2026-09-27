@@ -33,10 +33,14 @@ class RosaryGuideScreen extends ConsumerStatefulWidget {
 }
 
 class _RosaryGuideScreenState extends ConsumerState<RosaryGuideScreen> {
-  late final PageController _pageController;
   late final List<RosaryStep> _steps;
   late final MysterySet _mysterySet;
   int _index = 0;
+
+  /// Changes whenever the shown prayer changes, which is what triggers the
+  /// crossfade. Moving between identical prayers keeps it, so the text stays
+  /// put and only the beads move.
+  int _prayerKey = 0;
 
   @override
   void initState() {
@@ -49,23 +53,21 @@ class _RosaryGuideScreenState extends ConsumerState<RosaryGuideScreen> {
     final resumeIndex =
         saved?.type == _mysterySet.type ? saved!.index : 0;
     _index = resumeIndex;
-    _pageController = PageController(initialPage: resumeIndex);
   }
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  void _go(int delta) => _goTo(_index + delta);
 
-  void _go(int delta) {
-    final next = (_index + delta).clamp(0, _steps.length - 1);
+  void _goTo(int target) {
+    final next = target.clamp(0, _steps.length - 1);
     if (next == _index) return;
-    _pageController.animateToPage(
-      next,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOut,
-    );
+    final stepByStep = (next - _index).abs() == 1;
+    setState(() {
+      if (!stepByStep || !isSamePrayer(_steps[_index], _steps[next])) {
+        _prayerKey++;
+      }
+      _index = next;
+    });
+    _saveProgress(next);
   }
 
   void _saveProgress(int index) {
@@ -136,14 +138,18 @@ class _RosaryGuideScreenState extends ConsumerState<RosaryGuideScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _steps.length,
-                  onPageChanged: (i) {
-                    setState(() => _index = i);
-                    _saveProgress(i);
-                  },
-                  itemBuilder: (_, i) => RosaryStepView(step: _steps[i]),
+                // Tap anywhere on the prayer to advance. Scrolling a long
+                // prayer is a drag, so it never counts as a tap.
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: isComplete ? null : () => _go(1),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: KeyedSubtree(
+                      key: ValueKey(_prayerKey),
+                      child: RosaryStepView(step: step),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -209,7 +215,7 @@ class _RosaryGuideScreenState extends ConsumerState<RosaryGuideScreen> {
       showDragHandle: true,
       builder: (_) => _StepListSheet(steps: _steps, current: _index),
     );
-    if (picked != null) _pageController.jumpToPage(picked);
+    if (picked != null) _goTo(picked);
   }
 
   Future<void> _showSectionSheet() async {
@@ -224,7 +230,7 @@ class _RosaryGuideScreenState extends ConsumerState<RosaryGuideScreen> {
         activeSectionIndex: _activeSectionIndex(sections),
       ),
     );
-    if (picked != null) _pageController.jumpToPage(picked);
+    if (picked != null) _goTo(picked);
   }
 }
 

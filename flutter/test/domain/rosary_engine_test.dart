@@ -82,4 +82,31 @@ void main() {
       expect(firstAnnounce.mystery!.name, 'The Annunciation');
     });
   });
+
+  group('isSamePrayer', () {
+    final steps = generateRosarySteps(getMysterySetForDate(DateTime(2026, 5, 4)));
+    RosaryStep hailMaryOfDecade(int decade, int n) => steps
+        .where((s) => s.decadeNumber == decade && s.prayerTitle == 'Hail Mary')
+        .elementAt(n);
+
+    test('two Hail Marys of a decade are the same prayer, despite their counters', () {
+      final first = hailMaryOfDecade(1, 0);
+      final second = hailMaryOfDecade(1, 1);
+      expect(first.prayerSubtitle, isNot(second.prayerSubtitle));
+      expect(isSamePrayer(first, second), isTrue);
+    });
+
+    test('the last Hail Mary of a decade and the Glory Be are different prayers', () {
+      final lastHailMary = hailMaryOfDecade(1, 9);
+      final next = steps[steps.indexOf(lastHailMary) + 1];
+      expect(next.prayerTitle, isNot('Hail Mary'));
+      expect(isSamePrayer(lastHailMary, next), isFalse);
+    });
+
+    test('the introductory Hail Marys are the same prayer, despite their intentions', () {
+      final intro = steps.where((s) => s.decadeNumber == 0 && s.prayerTitle == 'Hail Mary').toList();
+      expect(intro.length, greaterThanOrEqualTo(2));
+      expect(isSamePrayer(intro[0], intro[1]), isTrue);
+    });
+  });
 }
