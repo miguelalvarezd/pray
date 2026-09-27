@@ -4,11 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/icons.dart';
-import '../../../core/time/logical_day.dart';
 import '../../../data/models/daily_log.dart';
 import '../../../data/models/novena.dart';
 import '../../../domain/defaults.dart';
-import '../../../services/api/litcal_client.dart';
+import '../../../services/liturgy/liturgical_calendar.dart';
 
 class DayCard extends ConsumerWidget {
   const DayCard({
@@ -35,8 +34,7 @@ class DayCard extends ConsumerWidget {
     final total = kDefaultPrayers.length;
     final pct = total == 0 ? 0 : ((completed / total) * 100).round();
     final hasGratitudeEntry = (log?.gratitudeEntry?.isNotEmpty ?? false);
-    final litcalClient = ref.watch(litCalClientProvider);
-    final liturgicalColor = litcalClient.colorSyncFor(formatLogDate(day));
+    final liturgicalColor = ref.watch(liturgicalDayProvider(day))?.color;
 
     final brightness = Theme.of(context).brightness;
     final pctColor = pct == 100

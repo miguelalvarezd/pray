@@ -8,7 +8,7 @@ import '../../../core/time/current_date_provider.dart';
 import '../../../core/time/logical_day.dart';
 import '../../../data/repositories/logs_repo.dart';
 import '../../../domain/defaults.dart';
-import '../../../services/api/litcal_client.dart';
+import '../../../services/liturgy/liturgical_calendar.dart';
 import '../today_sections.dart';
 
 class DailyPrayerList extends ConsumerStatefulWidget {
@@ -28,8 +28,7 @@ class _DailyPrayerListState extends ConsumerState<DailyPrayerList> {
     final dateStr = formatLogDate(date);
     final logs = ref.watch(logsProvider);
     final completed = logs[dateStr]?.completedPrayers ?? const <String>[];
-    final litcalClient = ref.watch(litCalClientProvider);
-    final massColorName = litcalClient.colorSyncFor(dateStr);
+    final massColorName = ref.watch(liturgicalDayProvider(date))?.color;
 
     final cards = <Widget>[];
     for (var i = 0; i < kDefaultPrayers.length; i++) {

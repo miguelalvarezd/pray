@@ -6,6 +6,7 @@ import 'package:pray/app.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:pray/data/boxes.dart';
 import 'package:pray/data/providers.dart';
+import 'package:pray/services/liturgy/liturgical_calendar.dart';
 
 /// Initializes Hive against a fresh temp directory and opens all app boxes.
 /// Returns both the boxes and the temp dir so tests can clean up after.
@@ -62,13 +63,23 @@ Future<AppBoxes> pumpPrayApp(
   });
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [appBoxesProvider.overrideWithValue(boxes)],
+      overrides: [
+        appBoxesProvider.overrideWithValue(boxes),
+        liturgicalCalendarProvider.overrideWith((ref) async => bundledLiturgicalCalendar),
+      ],
       child: const PrayApp(),
     ),
   );
   await settle(tester);
   return boxes;
 }
+
+/// The app's real bundled Liturgical Calendar, read straight from disk.
+/// Widget tests provide it pre-loaded because loading assets needs the real
+/// event loop, which fake-async widget tests don't run.
+final bundledLiturgicalCalendar = LiturgicalCalendar.fromJson(
+  File('assets/liturgy/liturgy.json').readAsStringSync(),
+);
 
 /// The app never fully settles (network-backed providers and ambient
 /// animations), so pump a fixed number of frames instead of
@@ -86,3 +97,4 @@ Future<void> chooseIntentionAction(WidgetTester tester, String action) async {
   await tester.tap(find.text(action).last);
   await settle(tester);
 }
+

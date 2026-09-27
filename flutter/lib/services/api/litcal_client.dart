@@ -21,10 +21,10 @@ class LiturgicalCelebration {
   });
 }
 
-class LiturgicalDay {
+class LitCalDay {
   final String date; // YYYY-MM-DD
   final List<LiturgicalCelebration> celebrations;
-  const LiturgicalDay({required this.date, required this.celebrations});
+  const LitCalDay({required this.date, required this.celebrations});
 
   /// Convenience: dominant color (first celebration), null if none.
   String? get colour => celebrations.isEmpty ? null : celebrations.first.colour;
@@ -62,10 +62,10 @@ class LitCalClient {
     }
   }
 
-  /// Returns the [LiturgicalDay] for [date], fetching the whole year if it's
+  /// Returns the [LitCalDay] for [date], fetching the whole year if it's
   /// not already cached. Returns null on any network error so callers can fall
   /// back gracefully to the curated defaults.
-  Future<LiturgicalDay?> dayFor(DateTime date) async {
+  Future<LitCalDay?> dayFor(DateTime date) async {
     final dateStr = _fmt(date);
     final yearStr = date.year.toString();
 
@@ -104,7 +104,7 @@ class LitCalClient {
         .toList();
     if (events.isEmpty) return null;
 
-    return LiturgicalDay(
+    return LitCalDay(
       date: dateStr,
       celebrations: events.map((e) {
         return LiturgicalCelebration(
@@ -157,8 +157,8 @@ final litCalClientProvider = Provider<LitCalClient>((ref) {
 
 /// Async lookup for a specific date. Riverpod caches per-arg so calls for the
 /// same date during a session don't re-fetch.
-final liturgicalDayProvider =
-    FutureProvider.family<LiturgicalDay?, DateTime>((ref, date) async {
+final litcalDayProvider =
+    FutureProvider.family<LitCalDay?, DateTime>((ref, date) async {
   final client = ref.watch(litCalClientProvider);
   return client.dayFor(date);
 });

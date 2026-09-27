@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/time/current_date_provider.dart';
 import '../../domain/rosary_engine.dart';
 import '../../services/api/lectio_client.dart';
+import '../../data/settings/mass_lang.dart';
 import '../../services/api/litcal_client.dart';
+import '../../services/liturgy/liturgical_calendar.dart';
 
 /// One section within an expanded prayer card. Mirrors `PrayerSection` in
 /// `src/types.ts`: a header label plus either prose [content] or a list of
@@ -58,7 +60,9 @@ List<PrayerSection> _morning(WidgetRef ref) {
 
 List<PrayerSection> _mass(WidgetRef ref) {
   final date = ref.watch(currentDateProvider);
-  final day = ref.watch(liturgicalDayProvider(date)).value;
+  final lang = ref.watch(massLangProvider);
+  final liturgicalDay = ref.watch(liturgicalDayProvider(date));
+  final day = ref.watch(litcalDayProvider(date)).value;
   final lectio = ref.watch(dailyLectioProvider(date)).value;
   final celebration = day?.celebrations.firstOrNull;
   final readings = celebration?.readings;
@@ -67,30 +71,29 @@ List<PrayerSection> _mass(WidgetRef ref) {
 
   final sections = <PrayerSection>[];
 
-  if (celebration != null) {
+  if (liturgicalDay != null) {
     sections.add(PrayerSection(
       title: "TODAY'S LITURGY",
-      content: celebration.title,
+      content: [
+        liturgicalDay.celebration.name(lang),
+        for (final m in liturgicalDay.optionalMemorials) 'or ${m.name(lang)}',
+      ].join('\n'),
     ));
-    if (hasLitcalReadings) {
-      sections.add(PrayerSection(
-        title: "TODAY'S READINGS",
-        items: [
-          if (readings['first_reading'] is String)
-            PrayerItem(icon: 'Book', text: readings['first_reading'] as String),
-          if (readings['responsorial_psalm'] is String)
-            PrayerItem(icon: 'Music', text: readings['responsorial_psalm'] as String),
-          if (readings['second_reading'] is String)
-            PrayerItem(icon: 'Book', text: readings['second_reading'] as String),
-          if (readings['gospel'] is String)
-            PrayerItem(icon: 'Book', text: readings['gospel'] as String),
-        ],
-      ));
-    }
-  } else {
-    sections.add(const PrayerSection(
-      title: 'SAINT OF THE DAY',
-      content: 'Roman Calendar',
+  }
+
+  if (hasLitcalReadings) {
+    sections.add(PrayerSection(
+      title: "TODAY'S READINGS",
+      items: [
+        if (readings['first_reading'] is String)
+          PrayerItem(icon: 'Book', text: readings['first_reading'] as String),
+        if (readings['responsorial_psalm'] is String)
+          PrayerItem(icon: 'Music', text: readings['responsorial_psalm'] as String),
+        if (readings['second_reading'] is String)
+          PrayerItem(icon: 'Book', text: readings['second_reading'] as String),
+        if (readings['gospel'] is String)
+          PrayerItem(icon: 'Book', text: readings['gospel'] as String),
+      ],
     ));
   }
 

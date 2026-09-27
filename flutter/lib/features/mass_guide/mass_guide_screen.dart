@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/time/current_date_provider.dart';
 import '../../core/time/logical_day.dart';
+import '../../data/settings/mass_lang.dart';
 import '../../data/boxes.dart';
 import '../../data/providers.dart';
 import '../../data/repositories/logs_repo.dart';
@@ -71,6 +72,7 @@ class _MassGuideScreenState extends ConsumerState<MassGuideScreen> {
   void _saveSettings(MassSettings s) {
     final box = ref.read(settingsBoxProvider);
     box.put(SettingsKeys.massLang, s.lang.name);
+    ref.invalidate(massLangProvider);
     if (s.secondaryLang != null) {
       box.put(SettingsKeys.massSecondaryLang, s.secondaryLang!.name);
     } else {

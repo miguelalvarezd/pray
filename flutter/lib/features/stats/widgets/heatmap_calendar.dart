@@ -7,7 +7,7 @@ import '../../../core/widgets/round_icon_button.dart';
 import '../../../data/models/activity_category.dart';
 import '../../../data/models/daily_log.dart';
 import '../../../domain/defaults.dart';
-import '../../../services/api/litcal_client.dart';
+import '../../../services/liturgy/liturgical_calendar.dart';
 
 enum HeatmapFilter { all, prayers, novenas, activities }
 
@@ -41,7 +41,7 @@ class _HeatmapCalendarState extends ConsumerState<HeatmapCalendar> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
-    final litcalClient = ref.watch(litCalClientProvider);
+    final calendar = ref.watch(liturgicalCalendarProvider).value;
 
     // Per-cell color override: only active when mass sub-filter is selected.
     Color? Function(String dateStr)? colorOverride;
@@ -49,7 +49,8 @@ class _HeatmapCalendarState extends ConsumerState<HeatmapCalendar> {
       colorOverride = (dateStr) {
         final log = widget.logs[dateStr];
         if (log == null || !log.completedPrayers.contains('mass')) return null;
-        return _litColor(litcalClient.colorSyncFor(dateStr), brightness, scheme);
+        final color = calendar?.dayFor(DateTime.parse(dateStr))?.color;
+        return _litColor(color, brightness, scheme);
       };
     }
 
