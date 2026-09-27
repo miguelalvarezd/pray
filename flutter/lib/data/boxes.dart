@@ -15,13 +15,6 @@ class BoxNames {
   static const logs = 'prayer-logs';
   static const settings = 'settings';
 
-  /// Per-year liturgical calendar JSON cache (`litcal-cache-<year>` mirrors the
-  /// React key shape). Stored as `Box<String>` keyed by year as a string.
-  static const litcalCache = 'litcal-cache';
-
-  /// Per-day daily-readings cache. `Box<String>` keyed by `YYYY-MM-DD`. Each
-  /// value is a JSON envelope `{cachedAt, data}` so we can apply a TTL.
-  static const lectioCache = 'lectio-cache';
 }
 
 /// Settings keys (stored in [BoxNames.settings]).
@@ -43,16 +36,12 @@ class AppBoxes {
   final Box<Novena> novenas;
   final Box<DailyLog> logs;
   final Box settings;
-  final Box<String> litcalCache;
-  final Box<String> lectioCache;
 
   const AppBoxes({
     required this.intentions,
     required this.novenas,
     required this.logs,
     required this.settings,
-    required this.litcalCache,
-    required this.lectioCache,
   });
 }
 
@@ -60,6 +49,10 @@ class AppBoxes {
 Future<AppBoxes> openAppBoxes() async {
   await Hive.initFlutter();
   Hive.registerAdapters();
+  // Caches of the remote liturgy sources the app no longer uses (ADR-0003).
+  for (final stale in ['litcal-cache', 'lectio-cache']) {
+    await Hive.deleteBoxFromDisk(stale);
+  }
   return _openBoxes();
 }
 
@@ -79,14 +72,10 @@ Future<AppBoxes> _openBoxes({Uint8List? bytes}) async {
   final novenas = await Hive.openBox<Novena>(BoxNames.novenas, bytes: bytes);
   final logs = await Hive.openBox<DailyLog>(BoxNames.logs, bytes: bytes);
   final settings = await Hive.openBox(BoxNames.settings, bytes: bytes);
-  final litcalCache = await Hive.openBox<String>(BoxNames.litcalCache, bytes: bytes);
-  final lectioCache = await Hive.openBox<String>(BoxNames.lectioCache, bytes: bytes);
   return AppBoxes(
     intentions: intentions,
     novenas: novenas,
     logs: logs,
     settings: settings,
-    litcalCache: litcalCache,
-    lectioCache: lectioCache,
   );
 }

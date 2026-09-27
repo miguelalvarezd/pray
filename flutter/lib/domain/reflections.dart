@@ -7,9 +7,9 @@ class Reflection {
   const Reflection(this.text, this.citation);
 }
 
-/// Curated fallback list used by Today's daily quote when the remote daily lectio
-/// API is unavailable. Order is identical to `CURATED_REFLECTIONS` so the
-/// day-of-year picker yields the same quote in React and Flutter.
+/// The curated Reflections, one shown per Day on Today. Order is identical to
+/// `CURATED_REFLECTIONS` so the day-of-year picker yields the same quote in
+/// React and Flutter.
 const List<Reflection> kCuratedReflections = [
   Reflection('I am the Way, the Truth, and the Life.', 'John 14:6'),
   Reflection('Be still, and know that I am God.', 'Psalm 46:10'),

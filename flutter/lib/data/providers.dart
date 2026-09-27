@@ -26,9 +26,3 @@ final logsBoxProvider = Provider<Box<DailyLog>>(
 final settingsBoxProvider = Provider<Box>(
   (ref) => ref.watch(appBoxesProvider).settings,
 );
-final litcalCacheBoxProvider = Provider<Box<String>>(
-  (ref) => ref.watch(appBoxesProvider).litcalCache,
-);
-final lectioCacheBoxProvider = Provider<Box<String>>(
-  (ref) => ref.watch(appBoxesProvider).lectioCache,
-);

@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/time/current_date_provider.dart';
 import '../../domain/rosary_engine.dart';
-import '../../services/api/lectio_client.dart';
 import '../../data/settings/mass_lang.dart';
 import '../../services/liturgy/liturgical_calendar.dart';
 import '../../services/liturgy/reading_references.dart';
@@ -45,16 +44,12 @@ List<PrayerSection> sectionsFor(WidgetRef ref, String prayerId) {
 }
 
 List<PrayerSection> _morning(WidgetRef ref) {
-  final date = ref.watch(currentDateProvider);
-  final lectio = ref.watch(dailyLectioProvider(date)).value;
-  return [
-    const PrayerSection(
+  return const [
+    PrayerSection(
       title: 'MORNING OFFERING',
       content:
           'O Jesus, through the Immaculate Heart of Mary, I offer you my prayers, works, joys, and sufferings of this day in union with the Holy Sacrifice of the Mass throughout the world.',
     ),
-    if (lectio?.dailyPrayer != null)
-      PrayerSection(title: 'DAILY DEVOTION', content: lectio!.dailyPrayer),
   ];
 }
 
@@ -102,33 +97,16 @@ List<PrayerSection> _rosary(WidgetRef ref) {
 }
 
 List<PrayerSection> _evening(WidgetRef ref) {
-  final date = ref.watch(currentDateProvider);
-  final lectio = ref.watch(dailyLectioProvider(date)).value;
-  return [
-    const PrayerSection(
+  return const [
+    PrayerSection(
       title: 'EXAMEN',
       content:
           "Review the day with gratitude. Note where you felt God's presence and where you fell short. Ask for forgiveness and grace for tomorrow.",
     ),
-    if (lectio?.saintReflection != null)
-      PrayerSection(
-          title: 'EVENING REFLECTION', content: lectio!.saintReflection),
   ];
 }
 
 List<PrayerSection> _bible(WidgetRef ref) {
-  final date = ref.watch(currentDateProvider);
-  final lectio = ref.watch(dailyLectioProvider(date)).value;
-  final quote = lectio?.quote;
-  final citation = lectio?.quoteCitation ?? 'The Gospel';
-  if (quote != null) {
-    return [
-      PrayerSection(
-        title: 'VERSE OF THE DAY',
-        content: '"$quote"\n\n— $citation',
-      ),
-    ];
-  }
   return const [
     PrayerSection(
       title: 'SUGGESTED READING',
