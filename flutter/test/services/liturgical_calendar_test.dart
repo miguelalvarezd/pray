@@ -74,4 +74,47 @@ void main() {
       expect(refs(DateTime(2026, 10, 2)).first, startsWith('first: Jb 38:1, 12-21; 40:3-'));
     });
   });
+
+  List<String> formatted(DateTime day, Lang lang) =>
+      [for (final r in calendar.dayFor(day)!.readings) formatReading(r, lang)];
+
+  group('Reading References in Spanish, as Spain\'s lectionary writes them', () {
+    test('a Sunday: Spain\'s abbreviations, punctuation and psalm numbering', () {
+      expect(formatted(DateTime(2026, 9, 27), Lang.es), [
+        'Ez 18, 25-28',
+        'Sal 24',
+        'Flp 2, 1-11 o 2, 1-5',
+        'Mt 21, 28-32',
+      ]);
+    });
+
+    test('passages across chapters, and several chapters', () {
+      expect(formatted(DateTime(2026, 2, 18), Lang.es)[2], '2 Cor 5, 20 — 6, 2');
+      expect(formatted(DateTime(2026, 10, 2), Lang.es).first, startsWith('Job 38, 1. 12-21; 40, 3-'));
+    });
+
+    test('psalms that Spain numbers differently, including split ones', () {
+      // Hebrew 116:12-18 is Spain's Psalm 115 (Holy Thursday).
+      expect(formatted(DateTime(2026, 4, 2), Lang.es)[1], 'Sal 115');
+      // Hebrew 147:12-20 is Spain's Psalm 147 (Second Sunday after Christmas).
+      expect(formatted(DateTime(2026, 1, 4), Lang.es)[1], 'Sal 147');
+      // Hebrew 51 is Spain's Psalm 50 (Ash Wednesday).
+      expect(formatted(DateTime(2026, 2, 18), Lang.es)[1], 'Sal 50');
+    });
+  });
+
+  group('Reading References in German', () {
+    test('a Sunday: German abbreviations and both psalm numbers', () {
+      expect(formatted(DateTime(2026, 9, 27), Lang.de), [
+        'Ez 18,25-28',
+        'Ps 25 (24)',
+        'Phil 2,1-11 oder 2,1-5',
+        'Mt 21,28-32',
+      ]);
+    });
+
+    test('passages across chapters', () {
+      expect(formatted(DateTime(2026, 2, 18), Lang.de)[2], '2 Kor 5,20 – 6,2');
+    });
+  });
 }
