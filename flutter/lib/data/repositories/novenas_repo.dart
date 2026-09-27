@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/intention.dart';
+import '../models/intention_status.dart';
 import '../models/novena.dart';
 import '../models/priority.dart';
 import '../providers.dart';
@@ -22,21 +23,32 @@ class NovenasNotifier extends Notifier<List<Novena>> {
     ref.invalidateSelf();
   }
 
-  /// Starts [novena]. With a non-empty [newPetition], a new Intention with
-  /// that title is created and the Novena is offered for it; otherwise the
-  /// Novena keeps whatever Intention (or none) it was given.
-  Future<void> start(Novena novena, {String? newPetition}) async {
-    final petition = newPetition?.trim() ?? '';
+  /// Starts [novena]. If it isn't already offered for an Intention, the
+  /// typed [intentionText] decides: text equal to an active Intention's title
+  /// (ignoring case and surrounding spaces) links that Intention; any other
+  /// non-empty text creates a new Intention; empty text links none.
+  Future<void> start(Novena novena, {String? intentionText}) async {
+    final text = intentionText?.trim() ?? '';
     var toStart = novena;
-    if (petition.isNotEmpty) {
-      final intention = Intention(
-        id: _uuid.v4(),
-        title: petition,
-        createdAt: novena.createdAt,
-        priority: Priority.medium,
-      );
-      await ref.read(intentionsProvider.notifier).add(intention);
-      toStart = novena.offeredFor(intention.id);
+    if (novena.intentionId == null && text.isNotEmpty) {
+      final intentions = ref.read(intentionsProvider);
+      final existing = intentions.where((i) =>
+          i.status == IntentionStatus.active &&
+          i.title.trim().toLowerCase() == text.toLowerCase());
+      final String intentionId;
+      if (existing.isNotEmpty) {
+        intentionId = existing.first.id;
+      } else {
+        final created = Intention(
+          id: _uuid.v4(),
+          title: text,
+          createdAt: novena.createdAt,
+          priority: Priority.medium,
+        );
+        await ref.read(intentionsProvider.notifier).add(created);
+        intentionId = created.id;
+      }
+      toStart = novena.offeredFor(intentionId);
     }
     await add(toStart);
   }

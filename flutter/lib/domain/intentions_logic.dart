@@ -43,6 +43,20 @@ bool isTargetDatePassed(Intention i, DateTime today) {
   return _daysBetween(DateTime.parse(target), today) < 0;
 }
 
+/// Active Intentions whose title contains [text], ignoring case and
+/// surrounding spaces. Offered as suggestions when typing what a Novena is
+/// offered for.
+List<Intention> suggestIntentions(String text, Iterable<Intention> intentions) {
+  final query = text.trim().toLowerCase();
+  if (query.isEmpty) return const [];
+  return [
+    for (final i in intentions)
+      if (i.status == IntentionStatus.active &&
+          i.title.toLowerCase().contains(query))
+        i,
+  ];
+}
+
 List<Intention> sortIntentions(Iterable<Intention> intentions, DateTime now) {
   final list = intentions.toList();
   list.sort((a, b) => calculateUrgency(b, now).compareTo(calculateUrgency(a, now)));

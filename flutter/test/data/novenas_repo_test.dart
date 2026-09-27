@@ -53,10 +53,10 @@ void main() {
   });
 
   group('starting a Novena', () {
-    test('for a new petition creates an active Intention and links it', () async {
+    test('for new text creates an active Intention and links it', () async {
       await container.read(novenasProvider.notifier).start(
             _novena('n1'),
-            newPetition: '  Exams  ',
+            intentionText: '  Exams  ',
           );
 
       final novena = container.read(novenasProvider).single;
@@ -80,6 +80,50 @@ void main() {
 
       expect(container.read(novenasProvider).single.intentionId, 'i1');
       expect(container.read(intentionsProvider), hasLength(1));
+    });
+
+    test('for text matching an active Intention\'s title links it without creating another',
+        () async {
+      await container.read(intentionsProvider.notifier).add(const Intention(
+            id: 'i1',
+            title: "Mom's surgery",
+            createdAt: '2026-04-01T10:00:00.000Z',
+            priority: Priority.high,
+          ));
+
+      await container
+          .read(novenasProvider.notifier)
+          .start(_novena('n1'), intentionText: "  MOM'S SURGERY ");
+
+      expect(container.read(novenasProvider).single.intentionId, 'i1');
+      expect(container.read(intentionsProvider), hasLength(1));
+    });
+
+    test('for text matching only an Answered Intention creates a new one', () async {
+      await container.read(intentionsProvider.notifier).add(const Intention(
+            id: 'old',
+            title: 'Exams',
+            createdAt: '2026-01-01T10:00:00.000Z',
+            priority: Priority.medium,
+            status: IntentionStatus.answered,
+          ));
+
+      await container
+          .read(novenasProvider.notifier)
+          .start(_novena('n1'), intentionText: 'Exams');
+
+      final linked = container.read(novenasProvider).single.intentionId;
+      expect(linked, isNot('old'));
+      expect(container.read(intentionsProvider), hasLength(2));
+    });
+
+    test('for empty text leaves it unlinked', () async {
+      await container
+          .read(novenasProvider.notifier)
+          .start(_novena('n1'), intentionText: '   ');
+
+      expect(container.read(novenasProvider).single.intentionId, isNull);
+      expect(container.read(intentionsProvider), isEmpty);
     });
 
     test('for no Intention leaves it unlinked', () async {

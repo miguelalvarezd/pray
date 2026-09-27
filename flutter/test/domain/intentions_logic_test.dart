@@ -137,4 +137,18 @@ void main() {
       expect(isTargetDatePassed(_i(targetDate: '2026-04-30'), day), isFalse);
     });
   });
+
+  group('suggestIntentions', () {
+    final mom = _i(id: "Mom's surgery");
+    final exams = _i(id: 'Exams');
+    final answered = _i(id: 'Surgery recovery', status: IntentionStatus.answered);
+
+    test('suggests active Intentions whose title contains the text, ignoring case', () {
+      expect(suggestIntentions('SURGERY', [mom, exams, answered]), [mom]);
+    });
+
+    test('empty text suggests nothing', () {
+      expect(suggestIntentions('   ', [mom, exams]), isEmpty);
+    });
+  });
 }

@@ -5,18 +5,16 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/time/current_date_provider.dart';
-import '../../../data/models/intention_status.dart';
+import '../../../data/models/intention.dart';
 import '../../../data/models/novena.dart';
 import '../../../data/repositories/intentions_repo.dart';
 import '../../../data/repositories/novenas_repo.dart';
+import '../../../domain/intentions_logic.dart';
 import '../../../domain/novena_library.dart';
 
 const _uuid = Uuid();
 
 enum _Source { library, custom }
-
-/// Dropdown value for "offer this Novena for a new petition".
-const _newPetition = '__new__';
 
 Future<void> showAddNovenaSheet(BuildContext context) {
   return showModalBottomSheet<void>(
@@ -40,11 +38,11 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
   _Source _source = _Source.library;
   String? _templateId;
   final _saint = TextEditingController();
-  final _petition = TextEditingController();
+  /// What the Novena is offered for, as typed. Ignored once [_linked] is set.
+  final _intentionText = TextEditingController();
 
-  /// What the Novena is offered for: `null` for no Intention, [_newPetition]
-  /// for a new one typed below, or the id of an active Intention.
-  String? _offeredFor;
+  /// An existing Intention chosen by tapping a suggestion.
+  Intention? _linked;
   DateTime? _startDate;
   GoRouter? _router;
 
@@ -71,7 +69,7 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
   void dispose() {
     _router?.routerDelegate.removeListener(_popOnNavigation);
     _saint.dispose();
-    _petition.dispose();
+    _intentionText.dispose();
     super.dispose();
   }
 
@@ -86,21 +84,14 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
     if (picked != null) setState(() => _startDate = picked);
   }
 
-  /// The petition text for a new Intention, falling back to the template's
-  /// suggested intention when left empty.
-  String get _petitionText {
-    final typed = _petition.text.trim();
-    if (typed.isNotEmpty) return typed;
-    final tpl = _templateId == null ? null : findTemplate(_templateId!);
-    return tpl?.suggestedIntention ?? '';
-  }
+  bool get _canSubmit => _source == _Source.library
+      ? _templateId != null
+      : _saint.text.trim().isNotEmpty;
 
-  bool get _canSubmit {
-    final hasSource = _source == _Source.library
-        ? _templateId != null
-        : _saint.text.trim().isNotEmpty;
-    final hasPetition = _offeredFor != _newPetition || _petitionText.isNotEmpty;
-    return hasSource && hasPetition;
+  void _useText(String text) {
+    _intentionText.text = text;
+    _intentionText.selection = TextSelection.collapsed(offset: text.length);
+    setState(() {});
   }
 
   Future<void> _submit() async {
@@ -109,8 +100,7 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
     final startStr = DateFormat('yyyy-MM-dd').format(start);
     final createdAt = now.toUtc().toIso8601String();
 
-    final existingIntentionId =
-        _offeredFor == _newPetition ? null : _offeredFor;
+    final existingIntentionId = _linked?.id;
     final Novena novena;
     if (_source == _Source.library) {
       final tpl = findTemplate(_templateId!);
@@ -136,7 +126,7 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
 
     await ref.read(novenasProvider.notifier).start(
           novena,
-          newPetition: _offeredFor == _newPetition ? _petitionText : null,
+          intentionText: _linked == null ? _intentionText.text : null,
         );
     if (mounted) Navigator.of(context).pop();
   }
@@ -146,13 +136,14 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
     final scheme = Theme.of(context).colorScheme;
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final selectedTemplate = _templateId == null ? null : findTemplate(_templateId!);
-    final petitionHint = selectedTemplate != null
-        ? 'Your petition (default: ${selectedTemplate.suggestedIntention})'
-        : 'What are you asking for?';
-    final activeIntentions = ref
-        .watch(intentionsProvider)
-        .where((i) => i.status == IntentionStatus.active)
+    final typed = _intentionText.text.trim();
+    final suggestions = suggestIntentions(typed, ref.watch(intentionsProvider))
+        .take(5)
         .toList();
+    final templateSuggestion = selectedTemplate?.suggestedIntention;
+    final offerTemplate = templateSuggestion != null &&
+        templateSuggestion.isNotEmpty &&
+        typed.toLowerCase() != templateSuggestion.toLowerCase();
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 8, 20, 20 + viewInsets),
@@ -225,34 +216,47 @@ class _AddNovenaSheetState extends ConsumerState<_AddNovenaSheet> {
                 ),
               ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<String?>(
-              initialValue: _offeredFor,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Offered for'),
-              items: [
-                const DropdownMenuItem(value: null, child: Text('No intention')),
-                for (final i in activeIntentions)
-                  DropdownMenuItem(
-                    value: i.id,
-                    child: Text(i.title, overflow: TextOverflow.ellipsis),
-                  ),
-                const DropdownMenuItem(
-                  value: _newPetition,
-                  child: Text('New petition…'),
-                ),
-              ],
-              onChanged: (v) => setState(() => _offeredFor = v),
-            ),
-            if (_offeredFor == _newPetition) ...[
-              const SizedBox(height: 12),
+            if (_linked != null)
+              InputChip(
+                avatar: Icon(Icons.favorite, size: 16, color: scheme.secondary),
+                label: Text('For: ${_linked!.title}'),
+                onDeleted: () => setState(() => _linked = null),
+                deleteButtonTooltipMessage: 'Remove intention',
+              )
+            else ...[
               TextField(
-                controller: _petition,
+                controller: _intentionText,
                 onChanged: (_) => setState(() {}),
-                autofocus: true,
                 minLines: 1,
                 maxLines: 3,
-                decoration: InputDecoration(hintText: petitionHint),
+                decoration: const InputDecoration(
+                  hintText: 'What are you praying for? (optional)',
+                ),
               ),
+              if (suggestions.isNotEmpty || offerTemplate) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final i in suggestions)
+                      ActionChip(
+                        avatar: Icon(Icons.favorite_outline,
+                            size: 16, color: scheme.secondary),
+                        label: Text(i.title, overflow: TextOverflow.ellipsis),
+                        onPressed: () => setState(() => _linked = i),
+                      ),
+                    if (offerTemplate)
+                      ActionChip(
+                        avatar: Icon(Icons.auto_awesome,
+                            size: 16, color: scheme.tertiary),
+                        label: Text(templateSuggestion,
+                            overflow: TextOverflow.ellipsis),
+                        onPressed: () => _useText(templateSuggestion),
+                      ),
+                  ],
+                ),
+              ],
             ],
             const SizedBox(height: 12),
             OutlinedButton.icon(
