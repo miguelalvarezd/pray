@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/time/logical_day.dart';
 import '../../domain/mass/types.dart';
+import 'reading_references.dart';
 
 /// Rank of a Celebration, highest first.
 enum CelebrationRank {
@@ -54,12 +55,17 @@ class LiturgicalDay {
   final String? color;
   final List<Celebration> optionalMemorials;
 
+  /// The Day's Readings in order (First Reading, Psalm, Second Reading if
+  /// any, Gospel; the Easter Vigil has more).
+  final List<Reading> readings;
+
   const LiturgicalDay({
     required this.date,
     required this.season,
     required this.celebration,
     required this.color,
     required this.optionalMemorials,
+    required this.readings,
   });
 }
 
@@ -70,8 +76,15 @@ class LiturgicalCalendar {
   final int toYear;
   final Map<String, Map<String, dynamic>> _days;
   final Map<String, Map<Lang, String>> _names;
+  final Map<String, List<Reading>> _lectionary;
 
-  LiturgicalCalendar._(this.fromYear, this.toYear, this._days, this._names);
+  LiturgicalCalendar._(
+    this.fromYear,
+    this.toYear,
+    this._days,
+    this._names,
+    this._lectionary,
+  );
 
   factory LiturgicalCalendar.fromJson(String json) {
     final data = jsonDecode(json) as Map<String, dynamic>;
@@ -89,6 +102,13 @@ class LiturgicalCalendar {
       data['toYear'] as int,
       (data['days'] as Map<String, dynamic>).cast<String, Map<String, dynamic>>(),
       names,
+      {
+        for (final MapEntry(:key, :value)
+            in ((data['lectionary'] as Map<String, dynamic>?) ?? const {}).entries)
+          key: [
+            for (final r in value as List) Reading.fromJson(r as Map<String, dynamic>),
+          ],
+      },
     );
   }
 
@@ -108,6 +128,7 @@ class LiturgicalCalendar {
         for (final id in (raw['optionalMemorials'] as List?) ?? const [])
           _celebration(id as String, CelebrationRank.optionalMemorial),
       ],
+      readings: _lectionary[raw['readings']] ?? const [],
     );
   }
 

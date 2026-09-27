@@ -1,6 +1,11 @@
 import { Romcal } from 'romcal';
 import { Spain_De, Spain_En, Spain_Es } from '@romcal/calendar.spain';
 
+import { loadLectionary } from './lectionary.ts';
+import { ReadingsResolver, type Reading, type RomcalEntry } from './readings.ts';
+
+export type { Reading } from './readings.ts';
+
 /** Languages the app shows Celebration names in (the Mass Guide's languages). */
 export const LANGUAGES = ['en', 'es', 'de'] as const;
 export type Language = (typeof LANGUAGES)[number];
@@ -27,6 +32,8 @@ export interface LiturgicalDayData {
   color?: string;
   /** Ids of the Optional Memorials that may be celebrated instead, if any. */
   optionalMemorials?: string[];
+  /** Key of the Day's Readings in {@link LiturgyData.lectionary}. */
+  readings?: string;
 }
 
 export interface LiturgyData {
@@ -39,6 +46,16 @@ export interface LiturgyData {
   names: Record<string, Record<Language, string>>;
   /** Liturgical Days keyed by `YYYY-MM-DD`. */
   days: Record<string, LiturgicalDayData>;
+  /**
+   * Readings by key. Days share entries: the key names the seed lectionary
+   * days used, e.g. `OW26-1Mon 2` or a weekday plus a saint's proper Gospel.
+   */
+  lectionary: Record<string, Reading[]>;
+  /**
+   * Celebrations that should have proper Readings but fell back to the
+   * weekday's because the lectionary table lacks them. Not written out.
+   */
+  missingPropers: string[];
 }
 
 const BUNDLES = { en: Spain_En, es: Spain_Es, de: Spain_De } as const;
@@ -60,13 +77,9 @@ const SPAIN_CONFIG = {
  */
 const OBLIGATORY_IN_SPAIN = new Set(['ildephonsus_of_toledo_bishop']);
 
-interface RomcalDay {
-  id: string;
-  name: string;
-  rank: string;
+interface RomcalDay extends RomcalEntry {
   isOptional: boolean;
   colors: string[];
-  seasons: string[];
 }
 
 /** Generates Spain's Liturgical Calendar for every Day of the given years. */
@@ -82,7 +95,10 @@ export async function generateLiturgy(options: {
     toYear,
     names: {},
     days: {},
+    lectionary: {},
+    missingPropers: [],
   };
+  const resolver = new ReadingsResolver(loadLectionary());
 
   for (let year = fromYear; year <= toYear; year++) {
     const byLanguage = {} as Record<Language, Record<string, RomcalDay[]>>;
@@ -102,9 +118,16 @@ export async function generateLiturgy(options: {
           de: byLanguage.de[date][i].name,
         };
       });
-      data.days[date] = toLiturgicalDay(entries);
+      const { day, celebration } = toLiturgicalDay(entries);
+      const resolved = resolver.resolve(celebration, date);
+      if (resolved) {
+        data.lectionary[resolved.key] ??= resolved.readings;
+        day.readings = resolved.key;
+      }
+      data.days[date] = day;
     }
   }
+  data.missingPropers = [...resolver.missingPropers];
   return data;
 }
 
@@ -115,7 +138,10 @@ export async function generateLiturgy(options: {
  * Thursday's evening Mass, are not alternatives. Spain's obligatory Memorials
  * are promoted from the list.
  */
-function toLiturgicalDay(entries: RomcalDay[]): LiturgicalDayData {
+function toLiturgicalDay(entries: RomcalDay[]): {
+  day: LiturgicalDayData;
+  celebration: RomcalDay;
+} {
   let [celebration, ...rest] = entries;
   let optional = rest.filter(
     (e) => e.isOptional || e.rank === 'MEMORIAL' || e.rank === 'OPTIONAL_MEMORIAL',
@@ -128,11 +154,12 @@ function toLiturgicalDay(entries: RomcalDay[]): LiturgicalDayData {
     optional = [];
   }
 
-  return {
+  const day: LiturgicalDayData = {
     season: celebration.seasons[0] ?? 'ORDINARY_TIME',
     celebration: celebration.id,
     rank: celebration.rank as Rank,
     ...(celebration.colors[0] && { color: celebration.colors[0].toLowerCase() }),
     ...(optional.length > 0 && { optionalMemorials: optional.map((e) => e.id) }),
   };
+  return { day, celebration };
 }

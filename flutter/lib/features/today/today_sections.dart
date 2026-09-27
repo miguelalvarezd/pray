@@ -4,8 +4,8 @@ import '../../core/time/current_date_provider.dart';
 import '../../domain/rosary_engine.dart';
 import '../../services/api/lectio_client.dart';
 import '../../data/settings/mass_lang.dart';
-import '../../services/api/litcal_client.dart';
 import '../../services/liturgy/liturgical_calendar.dart';
+import '../../services/liturgy/reading_references.dart';
 
 /// One section within an expanded prayer card. Mirrors `PrayerSection` in
 /// `src/types.ts`: a header label plus either prose [content] or a list of
@@ -25,8 +25,8 @@ class PrayerItem {
 }
 
 /// Returns the dynamic-content sections for a given default-prayer id.
-/// Mirrors `getDynamicPrayers` in `src/lib/api.ts` — pulls from the litcal
-/// + lectio clients when available and falls back to the curated defaults.
+/// Mirrors `getDynamicPrayers` in `src/lib/api.ts`. The Holy Mass sections
+/// come from the bundled Liturgical Calendar.
 List<PrayerSection> sectionsFor(WidgetRef ref, String prayerId) {
   switch (prayerId) {
     case 'morning_prayer':
@@ -62,66 +62,28 @@ List<PrayerSection> _mass(WidgetRef ref) {
   final date = ref.watch(currentDateProvider);
   final lang = ref.watch(massLangProvider);
   final liturgicalDay = ref.watch(liturgicalDayProvider(date));
-  final day = ref.watch(litcalDayProvider(date)).value;
-  final lectio = ref.watch(dailyLectioProvider(date)).value;
-  final celebration = day?.celebrations.firstOrNull;
-  final readings = celebration?.readings;
-  final hasLitcalReadings = readings != null &&
-      (readings['first_reading'] != null || readings['gospel'] != null);
+  if (liturgicalDay == null) return const [];
 
-  final sections = <PrayerSection>[];
-
-  if (liturgicalDay != null) {
-    sections.add(PrayerSection(
+  return [
+    PrayerSection(
       title: "TODAY'S LITURGY",
       content: [
         liturgicalDay.celebration.name(lang),
         for (final m in liturgicalDay.optionalMemorials) 'or ${m.name(lang)}',
       ].join('\n'),
-    ));
-  }
-
-  if (hasLitcalReadings) {
-    sections.add(PrayerSection(
-      title: "TODAY'S READINGS",
-      items: [
-        if (readings['first_reading'] is String)
-          PrayerItem(icon: 'Book', text: readings['first_reading'] as String),
-        if (readings['responsorial_psalm'] is String)
-          PrayerItem(icon: 'Music', text: readings['responsorial_psalm'] as String),
-        if (readings['second_reading'] is String)
-          PrayerItem(icon: 'Book', text: readings['second_reading'] as String),
-        if (readings['gospel'] is String)
-          PrayerItem(icon: 'Book', text: readings['gospel'] as String),
-      ],
-    ));
-  }
-
-  if (!hasLitcalReadings && lectio != null) {
-    sections.add(PrayerSection(
-      title: "TODAY'S READINGS",
-      items: [
-        if (lectio.firstReadingRef != null)
-          PrayerItem(icon: 'Book', text: lectio.firstReadingRef!),
-        if (lectio.psalmRef != null)
-          PrayerItem(icon: 'Music', text: lectio.psalmRef!),
-        if (lectio.secondReadingRef != null)
-          PrayerItem(icon: 'Book', text: lectio.secondReadingRef!),
-        if (lectio.gospelRef != null)
-          PrayerItem(icon: 'Book', text: lectio.gospelRef!),
-      ],
-    ));
-  } else if (!hasLitcalReadings) {
-    sections.add(const PrayerSection(
-      title: "TODAY'S READINGS",
-      items: [
-        PrayerItem(icon: 'Book', text: 'Daily Reading'),
-        PrayerItem(icon: 'Music', text: 'Daily Psalm'),
-        PrayerItem(icon: 'Book', text: 'Daily Gospel'),
-      ],
-    ));
-  }
-  return sections;
+    ),
+    if (liturgicalDay.readings.isNotEmpty)
+      PrayerSection(
+        title: "TODAY'S READINGS",
+        items: [
+          for (final r in liturgicalDay.readings)
+            PrayerItem(
+              icon: r.kind == ReadingKind.psalm ? 'Music' : 'Book',
+              text: formatReading(r, lang),
+            ),
+        ],
+      ),
+  ];
 }
 
 List<PrayerSection> _rosary(WidgetRef ref) {

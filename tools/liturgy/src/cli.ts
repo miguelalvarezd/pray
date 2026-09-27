@@ -31,6 +31,9 @@ function serialize(data: LiturgyData): string {
     '  },',
     '  "days": {',
     lines(data.days),
+    '  },',
+    '  "lectionary": {',
+    lines(data.lectionary),
     '  }',
     '}',
     '',
@@ -43,3 +46,8 @@ await writeFile(OUTPUT, serialize(data));
 console.log(
   `Wrote ${Object.keys(data.days).length} Days (${FROM_YEAR}–${TO_YEAR}) to ${OUTPUT}`,
 );
+if (data.missingPropers.length > 0) {
+  console.warn(
+    `These Celebrations have no proper Readings in the lectionary table yet, so they use the weekday's:\n  ${data.missingPropers.join('\n  ')}`,
+  );
+}
