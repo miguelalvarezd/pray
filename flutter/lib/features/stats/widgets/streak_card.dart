@@ -47,31 +47,36 @@ class StreakCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '$value',
-                        style: GoogleFonts.newsreader(
-                          fontSize: 44,
-                          fontWeight: FontWeight.w700,
-                          color: numberColor,
-                          height: 1,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Text(
-                          'days',
+                  // Scales down only when a long Streak wouldn't fit.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.bottomLeft,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '$value',
                           style: GoogleFonts.newsreader(
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                            color: numberColor.withValues(alpha: 0.6),
+                            fontSize: 44,
+                            fontWeight: FontWeight.w700,
+                            color: numberColor,
+                            height: 1,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 6),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Text(
+                            'days',
+                            style: GoogleFonts.newsreader(
+                              fontSize: 16,
+                              fontStyle: FontStyle.italic,
+                              color: numberColor.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

@@ -147,7 +147,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
             if (monthly.totalActivities > 0) ...[
               const SizedBox(height: 18),
               PrayerProgressBar(
-                label: 'Other Prayers',
+                label: 'Activities',
                 count: monthly.totalActivities,
                 total: monthly.daysPassed,
                 icon: Icons.auto_awesome,
