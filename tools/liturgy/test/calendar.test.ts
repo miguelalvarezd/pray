@@ -100,3 +100,22 @@ test('Holy Saturday, which has no Mass, has no liturgical colour (4 Apr 2026)', 
   assert.equal(day.season, 'PASCHAL_TRIDUUM');
   assert.equal(day.color, undefined);
 });
+
+// 2025, checked against the CEE's Calendario litúrgico-pastoral 2024-2025.
+const data2025: LiturgyData = await generateLiturgy({ fromYear: 2025, toYear: 2025 });
+
+test("Spain's Celebrations in 2025 match the CEE calendar", () => {
+  const day = (date: string) => data2025.days[date];
+  assert.equal(day('2025-01-23').celebration, 'ildephonsus_of_toledo_bishop');
+  assert.equal(day('2025-01-23').rank, 'MEMORIAL');
+  assert.equal(day('2025-05-15').celebration, 'isidore_the_farmer');
+  assert.equal(day('2025-06-01').celebration, 'ascension_of_the_lord');
+  assert.equal(day('2025-06-12').celebration, 'our_lord_jesus_christ_the_eternal_high_priest');
+  assert.equal(day('2025-06-22').celebration, 'most_holy_body_and_blood_of_christ');
+  assert.equal(day('2025-07-25').celebration, 'james_apostle');
+  assert.equal(day('2025-07-25').rank, 'SOLEMNITY');
+});
+
+test('Nuestra Señora del Pilar is celebrated even on a Sunday (12 Oct 2025)', () => {
+  assert.equal(data2025.days['2025-10-12'].celebration, 'our_lady_of_the_pillar');
+});

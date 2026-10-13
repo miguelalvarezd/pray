@@ -17,13 +17,35 @@ enum CelebrationRank {
   weekday;
 
   static CelebrationRank fromJson(String s) => switch (s) {
-        'SOLEMNITY' => solemnity,
-        'FEAST' => feast,
-        'SUNDAY' => sunday,
-        'MEMORIAL' => memorial,
-        'OPTIONAL_MEMORIAL' => optionalMemorial,
-        _ => weekday,
-      };
+    'SOLEMNITY' => solemnity,
+    'FEAST' => feast,
+    'SUNDAY' => sunday,
+    'MEMORIAL' => memorial,
+    'OPTIONAL_MEMORIAL' => optionalMemorial,
+    _ => weekday,
+  };
+
+  /// The rank's name in [lang], or null for Sundays and weekdays, whose
+  /// names already say what they are.
+  String? label(Lang lang) => switch (this) {
+    solemnity => const {
+      Lang.en: 'Solemnity',
+      Lang.es: 'Solemnidad',
+      Lang.de: 'Hochfest',
+    }[lang],
+    feast => const {Lang.en: 'Feast', Lang.es: 'Fiesta', Lang.de: 'Fest'}[lang],
+    memorial => const {
+      Lang.en: 'Memorial',
+      Lang.es: 'Memoria',
+      Lang.de: 'Gedenktag',
+    }[lang],
+    optionalMemorial => const {
+      Lang.en: 'Optional Memorial',
+      Lang.es: 'Memoria libre',
+      Lang.de: 'Nichtgebotener Gedenktag',
+    }[lang],
+    sunday || weekday => null,
+  };
 }
 
 /// What a Liturgical Day celebrates, or one of its Optional Memorials.
@@ -100,13 +122,16 @@ class LiturgicalCalendar {
     return LiturgicalCalendar._(
       data['fromYear'] as int,
       data['toYear'] as int,
-      (data['days'] as Map<String, dynamic>).cast<String, Map<String, dynamic>>(),
+      (data['days'] as Map<String, dynamic>)
+          .cast<String, Map<String, dynamic>>(),
       names,
       {
         for (final MapEntry(:key, :value)
-            in ((data['lectionary'] as Map<String, dynamic>?) ?? const {}).entries)
+            in ((data['lectionary'] as Map<String, dynamic>?) ?? const {})
+                .entries)
           key: [
-            for (final r in value as List) Reading.fromJson(r as Map<String, dynamic>),
+            for (final r in value as List)
+              Reading.fromJson(r as Map<String, dynamic>),
           ],
       },
     );
@@ -137,7 +162,9 @@ class LiturgicalCalendar {
 }
 
 /// The bundled Liturgical Calendar, loaded once from the app's assets.
-final liturgicalCalendarProvider = FutureProvider<LiturgicalCalendar>((ref) async {
+final liturgicalCalendarProvider = FutureProvider<LiturgicalCalendar>((
+  ref,
+) async {
   return LiturgicalCalendar.fromJson(
     await rootBundle.loadString('assets/liturgy/liturgy.json'),
   );
@@ -145,6 +172,9 @@ final liturgicalCalendarProvider = FutureProvider<LiturgicalCalendar>((ref) asyn
 
 /// The Liturgical Day for a Day, or null while the calendar is loading or
 /// outside the bundled years.
-final liturgicalDayProvider = Provider.family<LiturgicalDay?, DateTime>((ref, day) {
+final liturgicalDayProvider = Provider.family<LiturgicalDay?, DateTime>((
+  ref,
+  day,
+) {
   return ref.watch(liturgicalCalendarProvider).value?.dayFor(day);
 });

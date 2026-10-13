@@ -45,11 +45,8 @@ class _MassGuideScreenState extends ConsumerState<MassGuideScreen> {
 
   MassSettings _loadPersistedSettings() {
     final box = ref.read(settingsBoxProvider);
-    final langName = box.get(SettingsKeys.massLang) as String?;
     final secondaryName = box.get(SettingsKeys.massSecondaryLang) as String?;
-    final lang = langName != null
-        ? (Lang.values.where((l) => l.name == langName).firstOrNull ?? Lang.en)
-        : Lang.en;
+    final lang = ref.read(massLangProvider);
     final secondaryLang = secondaryName != null
         ? Lang.values.where((l) => l.name == secondaryName).firstOrNull
         : null;

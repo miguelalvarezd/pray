@@ -142,6 +142,10 @@ final _german = _Style(
   psalm: (hebrew, verse) => '$hebrew (${vulgatePsalm(hebrew, verse)})',
 );
 
+/// The word for "or" between alternatives in [lang] (Reading options,
+/// Optional Memorials).
+String orIn(Lang lang) => _styleFor(lang).or;
+
 _Style _styleFor(Lang lang) => switch (lang) {
       Lang.en => _english,
       Lang.es => _spanish,

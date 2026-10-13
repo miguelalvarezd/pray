@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../domain/intentions_logic.dart';
 import '../models/intention.dart';
-import '../models/intention_status.dart';
 import '../models/novena.dart';
 import '../models/priority.dart';
 import '../providers.dart';
@@ -31,13 +31,10 @@ class NovenasNotifier extends Notifier<List<Novena>> {
     final text = intentionText?.trim() ?? '';
     var toStart = novena;
     if (novena.intentionId == null && text.isNotEmpty) {
-      final intentions = ref.read(intentionsProvider);
-      final existing = intentions.where((i) =>
-          i.status == IntentionStatus.active &&
-          i.title.trim().toLowerCase() == text.toLowerCase());
+      final existing = findActiveIntentionTitled(text, ref.read(intentionsProvider));
       final String intentionId;
-      if (existing.isNotEmpty) {
-        intentionId = existing.first.id;
+      if (existing != null) {
+        intentionId = existing.id;
       } else {
         final created = Intention(
           id: _uuid.v4(),

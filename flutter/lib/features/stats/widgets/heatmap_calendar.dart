@@ -244,7 +244,7 @@ class _HeatmapCalendarState extends ConsumerState<HeatmapCalendar> {
       };
 }
 
-/// Maps a litcal color name to the appropriate hue for the heatmap cell,
+/// Maps a liturgical colour name to the appropriate hue for the heatmap cell,
 /// respecting light/dark mode. Falls back to theme secondary (ordinary time).
 Color _litColor(String? name, Brightness brightness, ColorScheme scheme) {
   final dark = brightness == Brightness.dark;

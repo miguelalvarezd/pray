@@ -17,7 +17,7 @@ export interface CalendarEntry {
 }
 
 /** A Reading Reference in neutral form: a book id and a passage. */
-export interface Reference {
+export interface ReadingReference {
   /** OSIS-style book id, e.g. `Luke`, `1Cor`, `Ps`. */
   book: string;
   /**
@@ -81,7 +81,7 @@ const TAMIL_BOOKS: Record<string, string> = {
  * to commons or other days, notes). Psalm verse groups separated by `.` are
  * normalised to `,`.
  */
-export function parseReference(ref: string): Reference | null {
+export function parseReference(ref: string): ReadingReference | null {
   const m = ref
     .trim()
     .replace(/~.*$/, '')

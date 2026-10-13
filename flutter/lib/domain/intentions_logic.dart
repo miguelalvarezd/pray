@@ -47,7 +47,7 @@ bool isTargetDatePassed(Intention i, DateTime today) {
 /// surrounding spaces. Offered as suggestions when typing what a Novena is
 /// offered for.
 List<Intention> suggestIntentions(String text, Iterable<Intention> intentions) {
-  final query = text.trim().toLowerCase();
+  final query = _normalized(text);
   if (query.isEmpty) return const [];
   return [
     for (final i in intentions)
@@ -56,6 +56,19 @@ List<Intention> suggestIntentions(String text, Iterable<Intention> intentions) {
         i,
   ];
 }
+
+/// The active Intention whose title is exactly [text], ignoring case and
+/// surrounding spaces, if any. Typing it links that Intention rather than
+/// creating a duplicate.
+Intention? findActiveIntentionTitled(String text, Iterable<Intention> intentions) {
+  final title = _normalized(text);
+  if (title.isEmpty) return null;
+  return intentions
+      .where((i) => i.status == IntentionStatus.active && _normalized(i.title) == title)
+      .firstOrNull;
+}
+
+String _normalized(String s) => s.trim().toLowerCase();
 
 List<Intention> sortIntentions(Iterable<Intention> intentions, DateTime now) {
   final list = intentions.toList();

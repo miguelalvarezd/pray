@@ -38,9 +38,10 @@ void main() {
     expect(calendar.dayFor(DateTime(calendar.toYear + 1, 1, 1)), isNull);
   });
 
-  test('the bundled years reach at least 3 years past the current year', () {
-    // If this fails, regenerate the data with a later end year (tools/liturgy).
-    expect(calendar.toYear - DateTime.now().year, greaterThanOrEqualTo(3));
+  test('the bundled years end more than 3 years after the current year', () {
+    // Fails once the current year is within 3 years of the end: regenerate
+    // the data with a later end year (tools/liturgy).
+    expect(calendar.toYear - DateTime.now().year, greaterThan(3));
   });
 
   group('Reading References in English', () {
@@ -100,6 +101,45 @@ void main() {
       expect(formatted(DateTime(2026, 1, 4), Lang.es)[1], 'Sal 147');
       // Hebrew 51 is Spain's Psalm 50 (Ash Wednesday).
       expect(formatted(DateTime(2026, 2, 18), Lang.es)[1], 'Sal 50');
+    });
+  });
+
+  group("Spain's psalm numbering", () {
+    test('Psalms 1-8 and 148-150 keep their number', () {
+      expect(vulgatePsalm(1, 1), 1);
+      expect(vulgatePsalm(8, 1), 8);
+      expect(vulgatePsalm(148, 1), 148);
+      expect(vulgatePsalm(150, 1), 150);
+    });
+
+    test('Hebrew 9 and 10 are both Psalm 9', () {
+      expect(vulgatePsalm(9, 2), 9);
+      expect(vulgatePsalm(10, 1), 9);
+    });
+
+    test('Hebrew 11-113 and 117-146 are one lower', () {
+      expect(vulgatePsalm(23, 1), 22);
+      expect(vulgatePsalm(113, 1), 112);
+      expect(vulgatePsalm(118, 1), 117);
+      expect(vulgatePsalm(146, 1), 145);
+    });
+
+    test('Hebrew 114 and 115 are both Psalm 113', () {
+      expect(vulgatePsalm(114, 1), 113);
+      expect(vulgatePsalm(115, 1), 113);
+    });
+
+    test('Hebrew 116 splits into Psalms 114 (verses 1-9) and 115 (verses 10-19)', () {
+      expect(vulgatePsalm(116, 1), 114);
+      expect(vulgatePsalm(116, 9), 114);
+      expect(vulgatePsalm(116, 10), 115);
+      expect(vulgatePsalm(116, 12), 115);
+    });
+
+    test('Hebrew 147 splits into Psalms 146 (verses 1-11) and 147 (verses 12-20)', () {
+      expect(vulgatePsalm(147, 1), 146);
+      expect(vulgatePsalm(147, 11), 146);
+      expect(vulgatePsalm(147, 12), 147);
     });
   });
 

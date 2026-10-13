@@ -49,4 +49,25 @@ void main() {
     await settle(tester);
     expect(find.text('Mt 21,28-32'), findsOneWidget);
   });
+
+  testWidgets('in Spanish, Optional Memorials follow "o" and the rank is named', (tester) async {
+    await pumpPrayApp(
+      tester,
+      day: '2026-09-28',
+      seed: (boxes) => boxes.settings.put(SettingsKeys.massLang, 'es'),
+    );
+    await tester.tap(find.text('Holy Mass'));
+    await settle(tester);
+
+    expect(find.textContaining('o San Wenceslao de Bohemia, mártir'), findsOneWidget);
+    expect(find.textContaining('or San Wenceslao'), findsNothing);
+  });
+
+  testWidgets("the Celebration's rank is shown for Feasts", (tester) async {
+    await pumpPrayApp(tester, day: '2026-10-12');
+    await tester.tap(find.text('Holy Mass'));
+    await settle(tester);
+
+    expect(find.textContaining('Our Lady of the Pillar · Feast'), findsOneWidget);
+  });
 }

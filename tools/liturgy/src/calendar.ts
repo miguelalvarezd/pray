@@ -77,6 +77,15 @@ const SPAIN_CONFIG = {
  */
 const OBLIGATORY_IN_SPAIN = new Set(['ildephonsus_of_toledo_bishop']);
 
+/**
+ * Feasts Spain celebrates even when they fall on a Sunday in Ordinary Time,
+ * which romcal lets the Sunday replace (checked against the CEE's calendar:
+ * 12 Oct 2025 is Nuestra Señora del Pilar).
+ */
+const OVER_SUNDAYS_IN_SPAIN: Record<string, { month: number; date: number; color: string }> = {
+  our_lady_of_the_pillar: { month: 10, date: 12, color: 'WHITE' },
+};
+
 interface RomcalDay extends RomcalEntry {
   isOptional: boolean;
   colors: string[];
@@ -110,8 +119,10 @@ export async function generateLiturgy(options: {
       >;
     }
 
-    for (const [date, entries] of Object.entries(byLanguage.en)) {
+    for (const [date, romcalEntries] of Object.entries(byLanguage.en)) {
+      const entries = withSpainSundayFeasts(romcalEntries, date);
       entries.forEach((entry, i) => {
+        if (entry !== romcalEntries[i]) return;
         data.names[entry.id] ??= {
           en: entry.name,
           es: byLanguage.es[date][i].name,
@@ -128,7 +139,38 @@ export async function generateLiturgy(options: {
     }
   }
   data.missingPropers = [...resolver.missingPropers];
+  for (const id of Object.keys(OVER_SUNDAYS_IN_SPAIN)) {
+    data.names[id] ??= { en: nameIn('en', id), es: nameIn('es', id), de: nameIn('de', id) };
+  }
   return data;
+}
+
+/** A Celebration's name in [language], from romcal's Spain bundle. */
+function nameIn(language: Language, id: string): string {
+  return BUNDLES[language].i18n.names?.[id] ?? id;
+}
+
+/** Puts a Feast Spain keeps over an Ordinary Time Sunday in the Sunday's place. */
+function withSpainSundayFeasts(entries: RomcalDay[], date: string): RomcalDay[] {
+  const [sunday] = entries;
+  if (sunday.rank !== 'SUNDAY' || sunday.seasons[0] !== 'ORDINARY_TIME') return entries;
+  const [, month, day] = date.split('-').map(Number);
+  for (const [id, def] of Object.entries(OVER_SUNDAYS_IN_SPAIN)) {
+    if (def.month !== month || def.date !== day) continue;
+    return [
+      {
+        ...sunday,
+        id,
+        name: nameIn('en', id),
+        rank: 'FEAST',
+        isOptional: false,
+        colors: [def.color],
+        dateDef: { month, date: day },
+        cycles: { ...sunday.cycles, properCycle: 'PROPER_OF_SAINTS' },
+      },
+    ];
+  }
+  return entries;
 }
 
 /**

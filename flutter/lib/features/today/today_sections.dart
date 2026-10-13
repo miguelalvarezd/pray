@@ -23,9 +23,8 @@ class PrayerItem {
   const PrayerItem({this.icon, required this.text});
 }
 
-/// Returns the dynamic-content sections for a given default-prayer id.
-/// Mirrors `getDynamicPrayers` in `src/lib/api.ts`. The Holy Mass sections
-/// come from the bundled Liturgical Calendar.
+/// Returns the expandable sections for a given default-prayer id. The Holy
+/// Mass sections come from the bundled Liturgical Calendar.
 List<PrayerSection> sectionsFor(WidgetRef ref, String prayerId) {
   switch (prayerId) {
     case 'morning_prayer':
@@ -63,8 +62,11 @@ List<PrayerSection> _mass(WidgetRef ref) {
     PrayerSection(
       title: "TODAY'S LITURGY",
       content: [
-        liturgicalDay.celebration.name(lang),
-        for (final m in liturgicalDay.optionalMemorials) 'or ${m.name(lang)}',
+        [
+          liturgicalDay.celebration.name(lang),
+          ?liturgicalDay.celebration.rank.label(lang),
+        ].join(' · '),
+        for (final m in liturgicalDay.optionalMemorials) '${orIn(lang)} ${m.name(lang)}',
       ].join('\n'),
     ),
     if (liturgicalDay.readings.isNotEmpty)

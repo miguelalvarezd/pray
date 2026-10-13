@@ -79,7 +79,7 @@ typedef _LitColors = ({
   Color onContainer,
 });
 
-_LitColors? _litcalColorSet(String? name, Brightness brightness) {
+_LitColors? _liturgicalColorSet(String? name, Brightness brightness) {
   if (name == null) return null;
   final dark = brightness == Brightness.dark;
   switch (name) {
@@ -131,7 +131,7 @@ class _PrayerCard extends StatelessWidget {
     final brightness = Theme.of(context).brightness;
     final hasSections = sections.isNotEmpty;
 
-    final lit = _litcalColorSet(liturgicalColorName, brightness);
+    final lit = _liturgicalColorSet(liturgicalColorName, brightness);
     final cardDoneBg = lit?.container ?? scheme.secondaryContainer;
     final iconBg = done
         ? (lit?.color ?? scheme.secondary)

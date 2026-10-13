@@ -2,7 +2,7 @@ import {
   parseReference,
   type Lectionary,
   type LectionaryRow,
-  type Reference,
+  type ReadingReference,
 } from './lectionary.ts';
 import { SPAIN_PROPERS, SPAIN_VERSES } from './spain.ts';
 
@@ -11,7 +11,7 @@ export type ReadingKind = 'first' | 'psalm' | 'second' | 'gospel';
 /** One Reading of a Day, with its options (a shorter form or alternatives). */
 export interface Reading {
   kind: ReadingKind;
-  options: Reference[];
+  options: ReadingReference[];
 }
 
 /** The parts of a romcal calendar entry the resolver needs. */
@@ -239,7 +239,7 @@ function withSpainVerses(readings: Reading[], dayIds: string[]): Reading[] {
 
 /** Groups rows into Readings; options within a kind keep the seed's order. */
 function toReadings(rows: LectionaryRow[], opts: { firstOptionOnly?: boolean } = {}): Reading[] {
-  const byKind = new Map<ReadingKind, { slot: number; ref: Reference }[]>();
+  const byKind = new Map<ReadingKind, { slot: number; ref: ReadingReference }[]>();
   for (const row of rows) {
     const kind = KIND_OF_SLOT[row.slot.split('.')[0]];
     const ref = kind && parseReference(row.ref);
@@ -266,7 +266,7 @@ function easterVigil(rows: LectionaryRow[]): Reading[] {
       )
       .sort((a, b) => Number(a.slot) - Number(b.slot))
       .map((r) => parseReference(r.ref))
-      .filter((r): r is Reference => r !== null);
+      .filter((r): r is ReadingReference => r !== null);
   const out: Reading[] = [];
   for (let n = 1; n <= 7; n++) {
     out.push({ kind: 'first', options: refs(`1.${n}`) });
