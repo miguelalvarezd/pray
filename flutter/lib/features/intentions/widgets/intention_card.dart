@@ -1,0 +1,315 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+
+import '../../../data/models/intention.dart';
+import '../../../data/models/intention_status.dart';
+import '../../../data/models/priority.dart';
+
+class IntentionCard extends StatelessWidget {
+  const IntentionCard({
+    super.key,
+    required this.intention,
+    required this.urgency,
+    required this.prayedCount,
+    required this.targetDatePassed,
+    required this.onKeepPraying,
+    required this.onAnswer,
+    required this.onArchive,
+    required this.onRestore,
+    required this.onDelete,
+  });
+
+  final Intention intention;
+  final double urgency;
+  final int prayedCount;
+
+  /// Whether to ask "Was this answered?" because the Target Date has passed.
+  final bool targetDatePassed;
+  final VoidCallback onKeepPraying;
+  final VoidCallback onAnswer;
+  final VoidCallback onArchive;
+  final VoidCallback onRestore;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isActive = intention.status == IntentionStatus.active;
+    final isAnswered = intention.status == IntentionStatus.answered;
+    final isUrgent = urgency > 40 && isActive;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
+        border: isUrgent
+            ? Border.all(color: scheme.error.withValues(alpha: 0.4))
+            : null,
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        intention.title,
+                        style: GoogleFonts.newsreader(
+                          fontSize: 19,
+                          color: scheme.onSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (isUrgent) ...[
+                      const SizedBox(width: 6),
+                      Icon(Icons.error_outline,
+                          size: 16, color: scheme.error),
+                    ],
+                  ],
+                ),
+                if (intention.description != null &&
+                    intention.description!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    intention.description!,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: scheme.onSurfaceVariant,
+                      height: 1.35,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (isAnswered && intention.answerNote != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    intention.answerNote!,
+                    style: GoogleFonts.newsreader(
+                      fontSize: 15,
+                      fontStyle: FontStyle.italic,
+                      color: scheme.onSurface,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _PriorityChip(priority: intention.priority),
+                    if (intention.targetDate != null)
+                      _Chip(
+                        label:
+                            'Target: ${DateFormat('MMM d, yyyy').format(DateTime.parse(intention.targetDate!))}',
+                        bg: scheme.surfaceContainer,
+                        fg: scheme.onSurfaceVariant,
+                      ),
+                    if (isAnswered && intention.answeredOn != null)
+                      _Chip(
+                        label:
+                            'Answered ${DateFormat('MMM d, yyyy').format(DateTime.parse(intention.answeredOn!))}',
+                        bg: scheme.secondaryContainer,
+                        fg: scheme.onSecondaryContainer,
+                        icon: Icons.check_circle_outline,
+                      ),
+                    if (prayedCount > 0)
+                      _Chip(
+                        label:
+                            'Prayed $prayedCount ${prayedCount == 1 ? "day" : "days"}',
+                        bg: scheme.primaryContainer.withValues(alpha: 0.7),
+                        fg: scheme.onPrimaryContainer,
+                        icon: Icons.auto_awesome,
+                      ),
+                  ],
+                ),
+                if (targetDatePassed) ...[
+                  const SizedBox(height: 12),
+                  _TargetDatePrompt(
+                    onAnswered: onAnswer,
+                    onArchive: onArchive,
+                    onKeepPraying: onKeepPraying,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          _IntentionMenu(
+            isActive: isActive,
+            onAnswer: onAnswer,
+            onArchive: onArchive,
+            onRestore: onRestore,
+            onDelete: onDelete,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum _IntentionAction { answer, archive, restore, delete }
+
+/// The card's actions, in a ⋮ menu so they don't set the card's height.
+class _IntentionMenu extends StatelessWidget {
+  const _IntentionMenu({
+    required this.isActive,
+    required this.onAnswer,
+    required this.onArchive,
+    required this.onRestore,
+    required this.onDelete,
+  });
+  final bool isActive;
+  final VoidCallback onAnswer;
+  final VoidCallback onArchive;
+  final VoidCallback onRestore;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    PopupMenuItem<_IntentionAction> item(
+      _IntentionAction value,
+      IconData icon,
+      String label,
+    ) =>
+        PopupMenuItem(
+          value: value,
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 12),
+              Text(label),
+            ],
+          ),
+        );
+
+    return PopupMenuButton<_IntentionAction>(
+      tooltip: 'Intention actions',
+      icon: Icon(Icons.more_vert, size: 20, color: scheme.outline),
+      padding: EdgeInsets.zero,
+      style: const ButtonStyle(visualDensity: VisualDensity.compact),
+      onSelected: (action) => switch (action) {
+        _IntentionAction.answer => onAnswer(),
+        _IntentionAction.archive => onArchive(),
+        _IntentionAction.restore => onRestore(),
+        _IntentionAction.delete => onDelete(),
+      },
+      itemBuilder: (_) => [
+        if (isActive) ...[
+          item(_IntentionAction.answer, Icons.check_circle_outline, 'Mark answered'),
+          item(_IntentionAction.archive, Icons.archive_outlined, 'Archive'),
+        ] else
+          item(_IntentionAction.restore, Icons.unarchive_outlined, 'Restore'),
+        item(_IntentionAction.delete, Icons.delete_outline, 'Delete'),
+      ],
+    );
+  }
+}
+
+class _TargetDatePrompt extends StatelessWidget {
+  const _TargetDatePrompt({
+    required this.onAnswered,
+    required this.onArchive,
+    required this.onKeepPraying,
+  });
+  final VoidCallback onAnswered;
+  final VoidCallback onArchive;
+  final VoidCallback onKeepPraying;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 4),
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'The target date has passed. Was this answered?',
+            style: TextStyle(fontSize: 13, color: scheme.onSecondaryContainer),
+          ),
+          Wrap(
+            children: [
+              TextButton(onPressed: onAnswered, child: const Text('Answered')),
+              TextButton(onPressed: onArchive, child: const Text('Archive')),
+              TextButton(
+                onPressed: onKeepPraying,
+                child: const Text('Keep praying'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PriorityChip extends StatelessWidget {
+  const _PriorityChip({required this.priority});
+  final Priority priority;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final (bg, fg) = switch (priority) {
+      Priority.high => (scheme.errorContainer.withValues(alpha: 0.4), scheme.error),
+      Priority.medium => (scheme.tertiaryContainer, scheme.onTertiaryContainer),
+      Priority.low => (scheme.secondaryContainer, scheme.onSecondaryContainer),
+    };
+    return _Chip(label: priority.name.toUpperCase(), bg: bg, fg: fg);
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip({
+    required this.label,
+    required this.bg,
+    required this.fg,
+    this.icon,
+  });
+  final String label;
+  final Color bg;
+  final Color fg;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 11, color: fg),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.3,
+              color: fg,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

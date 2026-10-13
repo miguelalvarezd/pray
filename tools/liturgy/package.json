@@ -1,0 +1,20 @@
+{
+  "name": "pray-liturgy",
+  "private": true,
+  "description": "Generates the app's bundled liturgical data: Spain's Liturgical Calendar and Reading References (ADR-0003).",
+  "type": "module",
+  "scripts": {
+    "generate": "tsx src/cli.ts",
+    "test": "node --import tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@romcal/calendar.spain": "3.0.0-dev.140",
+    "romcal": "3.0.0-dev.140"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
