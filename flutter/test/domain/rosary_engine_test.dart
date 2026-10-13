@@ -65,12 +65,22 @@ void main() {
       expect(decadeHM.length, 50);
     });
 
-    test('each decade has exactly 11 tracked beads', () {
+    test('each decade walks a 12-position bead track', () {
       for (var d = 1; d <= 5; d++) {
-        final tracked = steps.where(
-          (s) => s.decadeNumber == d && s.track?.phase == TrackPhase.decade,
+        final decade = steps.where((s) => s.decadeNumber == d).toList();
+        int? position(bool Function(RosaryStep) where) =>
+            decade.firstWhere(where).track?.position;
+
+        expect(decade.every((s) => s.track?.total == 12), isTrue, reason: 'decade $d');
+        expect(position((s) => s.type == StepType.mysteryReveal), 0);
+        expect(position((s) => s.prayerTitle == 'Our Father'), 0);
+        expect(
+          decade.where((s) => s.prayerTitle == 'Hail Mary').map((s) => s.track!.position),
+          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          reason: 'decade $d',
         );
-        expect(tracked.length, 11, reason: 'decade $d');
+        expect(position((s) => s.prayerTitle == 'Glory Be'), 11);
+        expect(position((s) => s.prayerTitle == 'Fatima Prayer'), 11);
       }
     });
 

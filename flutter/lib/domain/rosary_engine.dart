@@ -385,8 +385,10 @@ class RosaryStep {
   /// Decade context. 0 = intro or closing, 1–5 = a specific decade.
   final int decadeNumber;
 
-  /// Bead tracker within the current phase. Null for steps that don't sit
-  /// on a physical bead (Glory Be, Fatima, announcements).
+  /// Bead tracker within the current phase, so the bead row stays visible
+  /// throughout. In a decade the announcement and Our Father share position
+  /// 0, the Hail Marys are 1–10, and the Glory Be and Fatima Prayer share 11.
+  /// Null only for the closing steps.
   final StepTrack? track;
 
   final StepMystery? mystery;
